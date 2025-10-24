@@ -1,3 +1,7 @@
 .library_mapping.xml
 .project
 \.settings
+\db
+\output_files
+*.qpf
+*.qsf
