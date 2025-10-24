@@ -51,12 +51,12 @@ architecture RTL of vga_ctrl is
     signal h_cnt : natural := 0;
     signal h_overflow : std_logic := '0';
     signal v_cnt : natural := 0;
-    signal hsync : std_logic := '0';
-    signal vsync : std_logic := '0';
     
-    signal pxl_x_adr : natural := 0;
-    signal pxl_y_adr : natural := 0;
+    signal img_x_adr : natural := 0;
+    signal img_y_adr : natural := 0;
     signal pxl_is_draw : std_logic := '0';
+
+    signal rgb : std_logic_vector(3 downto 0);
 begin
 
 horizontal_cnt : entity work.overflow_counter
@@ -80,7 +80,7 @@ hsync_gen : entity work.sync_gen
     )
     port map(
         cnt_i  => std_logic_vector(h_cnt),
-        sync_o => hsync
+        sync_o => vga_hsync_o
     );
 
 vertical_cnt : entity work.overflow_counter
@@ -103,7 +103,7 @@ vsync_gen : entity work.sync_gen
     )
     port map(
         cnt_i  => std_logic_vector(v_cnt),
-        sync_o => vsync
+        sync_o => vga_vsync_o
     );
 
 vga_address_gen_inst : entity work.vga_address_gen
@@ -114,11 +114,29 @@ vga_address_gen_inst : entity work.vga_address_gen
     port map(
         h_cnt    => std_logic_vector(h_cnt),
         v_cnt    => std_logic_vector(v_cnt),
-        x        => std_logic_vector(pxl_x_adr),
-        y        => std_logic_vector(pxl_y_adr),
+        x        => std_logic_vector(img_x_adr),
+        y        => std_logic_vector(img_y_adr),
         drawable => pxl_is_draw
     );
 
-    
+img_buf_inst : entity work.img_buf
+    generic map(
+        IMG_WIDTH  => DISPLAY_PXL_SIDE,
+        IMG_HEIGHT => DISPLAY_PXL_SIDE
+    )
+    port map(
+        clk    => clk,
+        rst_n  => rst_n,
+        filled => ready_o,
+        we     => valid_i,
+        data_i => img_i,
+        re => pxl_is_draw,
+        rd_adr => std_logic_vector(img_x_adr + img_y_adr * DISPLAY_PXL_SIDE),
+        data_o => rgb
+    );
+
+vga_r_o <= rgb;
+vga_g_o <= rgb;
+vga_b_o <= rgb;
 
 end architecture RTL;

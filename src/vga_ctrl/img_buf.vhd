@@ -20,7 +20,8 @@ entity img_buf is
         --=============================================
         -- Read Side
         --=============================================
-        re_adr : in std_logic_vector(natural(ceil(log2(real(IMG_WIDTH * IMG_HEIGHT)))) downto 0);
+        rd_adr : in std_logic_vector(natural(ceil(log2(real(IMG_WIDTH * IMG_HEIGHT)))) downto 0);
+        re : in std_logic;
         data_o : out std_logic_vector(3 downto 0)
     );
 end entity img_buf;
@@ -31,6 +32,7 @@ architecture RTL of img_buf is
     type MEM is array (0 to mem_len) of std_logic_vector(3 downto 0);
     signal ram_block : MEM;
     signal wr_adr : natural := 0;
+    signal mem_data_o : std_logic_vector(3 downto 0);
 begin
 
     wr_adr_gen_cntr : process (clk) is
@@ -63,8 +65,10 @@ begin
             if (we = '1' and filled = '0') then
                 ram_block(wr_adr) <= data_i;
             end if;
-            data_o <= ram_block(natural(re_adr));
+            mem_data_o <= ram_block(natural(rd_adr));
         end if;
     end process memory;
     
+    data_o <= mem_data_o when re = '1' else (others => '0');
+
 end architecture RTL;
