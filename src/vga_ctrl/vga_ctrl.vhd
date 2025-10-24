@@ -51,8 +51,8 @@ architecture RTL of vga_ctrl is
     constant BLANKING_PXLS : natural := basics_p.max(MIN_BLANKING_PXLS, 
                                             integer(sqrt(real(CLK_FREQ_HZ) / real(DISPLAY_FPS_HZ))) - DISPLAY_PXL_SIDE);
 
-    constant PXL_CNTR_WIDTH : integer := natural(ceil(log2(real(DISPLAY_PXL_SIDE + BLANKING_PXLS))));
-    constant IMG_ADR_WIDTH : integer := natural(ceil(log2(real(DISPLAY_PXL_SIDE))));
+    constant PXL_CNTR_WIDTH : integer := basics_p.clog2(DISPLAY_PXL_SIDE + BLANKING_PXLS);
+    constant IMG_ADR_WIDTH : integer := basics_p.clog2(DISPLAY_PXL_SIDE);
     
     signal h_cnt : std_logic_vector(PXL_CNTR_WIDTH - 1 downto 0):= (others => '0');
     signal h_overflow : std_logic := '0';

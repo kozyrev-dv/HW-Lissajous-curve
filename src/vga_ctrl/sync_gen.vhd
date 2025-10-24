@@ -3,6 +3,7 @@ library ieee;
     use ieee.numeric_std.all;
     use ieee.math_real.all;
 
+use work.basics_p;
 entity sync_gen is
     generic (
         DISPLAY_SIZE : positive := 512;
@@ -12,7 +13,7 @@ entity sync_gen is
         POLARITY : boolean := TRUE -- if TRUE SYNC pulse '1' else '0'
     );
     port(
-        cnt_i : in std_logic_vector(natural(ceil(log2(real(DISPLAY_SIZE + FRONT_PORCH + SYNC_PULSE + BACK_PORCH)))) downto 0);
+        cnt_i : in std_logic_vector(basics_p.clog2(DISPLAY_SIZE + FRONT_PORCH + SYNC_PULSE + BACK_PORCH) - 1 downto 0);
         sync_o : out std_logic 
     );
 end entity sync_gen;

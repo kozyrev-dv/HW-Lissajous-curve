@@ -12,7 +12,7 @@ entity overflow_counter is
         clk : in std_logic;
         rst_n : in std_logic;
         ena : in std_logic;
-        cnt_o : out std_logic_vector(natural(ceil(log2(real(SYNC_SIZE)))) downto 0);
+        cnt_o : out std_logic_vector(basics_p.clog2(SYNC_SIZE) - 1 downto 0);
         full_o : out std_logic
     );
 end entity overflow_counter;
@@ -20,9 +20,6 @@ end entity overflow_counter;
 architecture RTL of overflow_counter is
     
 begin
-
-    basics_p.print_dgb(cnt_o'simple_name & " length is " & integer'image(cnt_o'length));
-
     counter : process (clk) is
     begin
         if rising_edge(clk) then

@@ -3,6 +3,7 @@ library ieee;
     use ieee.numeric_std.all;
     use ieee.math_real.all;
 
+use work.basics_p;
 entity img_buf is
     generic(
         IMG_WIDTH : positive := 512;
@@ -20,7 +21,7 @@ entity img_buf is
         --=============================================
         -- Read Side
         --=============================================
-        rd_adr_i : in std_logic_vector(natural(ceil(log2(real(IMG_WIDTH * IMG_HEIGHT)))) downto 0);
+        rd_adr_i : in std_logic_vector(basics_p.clog2(IMG_WIDTH * IMG_HEIGHT) - 1 downto 0);
         re_i : in std_logic;
         data_o : out std_logic_vector(3 downto 0)
     );
