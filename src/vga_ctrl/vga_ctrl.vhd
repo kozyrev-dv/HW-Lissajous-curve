@@ -54,6 +54,9 @@ architecture RTL of vga_ctrl is
     signal hsync : std_logic := '0';
     signal vsync : std_logic := '0';
     
+    signal pxl_x_adr : natural := 0;
+    signal pxl_y_adr : natural := 0;
+    signal pxl_is_draw : std_logic := '0';
 begin
 
 horizontal_cnt : entity work.overflow_counter
@@ -103,7 +106,19 @@ vsync_gen : entity work.sync_gen
         sync_o => vsync
     );
 
+vga_address_gen_inst : entity work.vga_address_gen
+    generic map(
+        DISPLAY_PXL_SIDE => DISPLAY_PXL_SIDE,
+        BLANKING_PXLS    => BLANKING_PXLS
+    )
+    port map(
+        h_cnt    => std_logic_vector(h_cnt),
+        v_cnt    => std_logic_vector(v_cnt),
+        x        => std_logic_vector(pxl_x_adr),
+        y        => std_logic_vector(pxl_y_adr),
+        drawable => pxl_is_draw
+    );
 
-
+    
 
 end architecture RTL;

@@ -1,0 +1,70 @@
+library ieee;
+    use ieee.std_logic_1164.all;
+    use ieee.numeric_std.all;
+    use ieee.math_real.all;
+
+entity img_buf is
+    generic(
+        IMG_WIDTH : positive := 512;
+        IMG_HEIGHT : positive := 512
+    );
+    port(
+        clk : in std_logic;
+        rst_n : in std_logic;
+        filled : out std_logic;
+        --=============================================
+        -- Write Side
+        --=============================================
+        we : in std_logic;
+        data_i : in std_logic_vector(3 downto 0);
+        --=============================================
+        -- Read Side
+        --=============================================
+        re_adr : in std_logic_vector(natural(ceil(log2(real(IMG_WIDTH * IMG_HEIGHT)))) downto 0);
+        data_o : out std_logic_vector(3 downto 0)
+    );
+end entity img_buf;
+
+architecture RTL of img_buf is
+    constant mem_len : integer := IMG_WIDTH * IMG_HEIGHT;
+    
+    type MEM is array (0 to mem_len) of std_logic_vector(3 downto 0);
+    signal ram_block : MEM;
+    signal wr_adr : natural := 0;
+begin
+
+    wr_adr_gen_cntr : process (clk) is
+    begin
+        if rising_edge(clk) then
+            if rst_n = '0' then
+                wr_adr <= 0;
+                filled <= '0';
+            else
+                if we = '1' and filled = '0' then
+                    if wr_adr = mem_len - 1 then
+                        wr_adr <= 0;
+                        filled <= '1';
+                    else
+                        wr_adr <= wr_adr + 1;
+                        filled <= '0';
+                    end if;
+                elsif we = '0' and filled = '1' then
+                    wr_adr <= 0;
+                    filled <= '0';
+                end if;
+            end if;
+        end if;
+    end process wr_adr_gen_cntr;
+    
+
+    memory : process (clk) is
+    begin
+        if (rising_edge(clk)) then
+            if (we = '1' and filled = '0') then
+                ram_block(wr_adr) <= data_i;
+            end if;
+            data_o <= ram_block(natural(re_adr));
+        end if;
+    end process memory;
+    
+end architecture RTL;
