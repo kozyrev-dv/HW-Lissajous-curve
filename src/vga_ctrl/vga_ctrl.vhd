@@ -87,7 +87,7 @@ horizontal_cnt : entity work.overflow_counter
     port map(
         clk    => clk,
         rst_n  => rst_n,
-        ena    => '0',
+        ena    => not ready_o,
         cnt_o  => h_cnt,
         full_o => h_overflow
     );
