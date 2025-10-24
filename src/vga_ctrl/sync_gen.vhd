@@ -20,7 +20,7 @@ end entity sync_gen;
 architecture RTL of sync_gen is
     signal temp : std_logic;
 begin
-    temp <= '1' when (natural(cnt_i) >= DISPLAY_SIZE + FRONT_PORCH and natural(cnt_i) < DISPLAY_SIZE + FRONT_PORCH + SYNC_PULSE)
+    temp <= '1' when (unsigned(cnt_i) >= DISPLAY_SIZE + FRONT_PORCH and unsigned(cnt_i) < DISPLAY_SIZE + FRONT_PORCH + SYNC_PULSE)
             else '0';
     
     sync_o <= temp when POLARITY else not temp;

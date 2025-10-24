@@ -65,7 +65,7 @@ begin
             if (we = '1' and filled = '0') then
                 ram_block(wr_adr) <= data_i;
             end if;
-            mem_data_o <= ram_block(natural(rd_adr));
+            mem_data_o <= ram_block(unsigned(rd_adr));
         end if;
     end process memory;
     

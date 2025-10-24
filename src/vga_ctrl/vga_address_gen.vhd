@@ -20,7 +20,8 @@ end entity vga_address_gen;
 architecture RTL of vga_address_gen is
     
 begin
-    drawable <= std_logic((natural(h_cnt) < DISPLAY_PXL_SIDE) and (natural(v_cnt) < DISPLAY_PXL_SIDE));
+    drawable <= '1' when (unsigned(h_cnt) < DISPLAY_PXL_SIDE) and (unsigned(v_cnt) < DISPLAY_PXL_SIDE)
+                else '0';
 
     x <= h_cnt when drawable else (others => '0');
     y <= v_cnt when drawable else (others => '0');

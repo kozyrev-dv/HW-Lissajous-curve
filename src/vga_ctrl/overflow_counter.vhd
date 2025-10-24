@@ -27,8 +27,8 @@ begin
                 full_o <= '0';
             else
                 if (ena = '1') then
-                    if (natural(cnt_o) < SYNC_SIZE - 1) then
-                        cnt_o <= std_logic_vector(natural(cnt_o) + 1);
+                    if (unsigned(cnt_o) < SYNC_SIZE - 1) then
+                        cnt_o <= std_logic_vector(unsigned(cnt_o) + 1);
                         full_o <= '0';
                     else
                         cnt_o <= (others => '0');

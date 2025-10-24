@@ -10,8 +10,6 @@
 --==    MIN_BLANKING_PXL: min number of pixels to pad the display to achieve desired freame rate and let the display to prepare foir next line/frame
 --==    DISPLAY_FPS_HZ: frame rate for display (in Hz). If desire frame rate is smaller then the maximum available with the given MIN_BLANKING_PXL, adjusts number of blanking pixels
 --===================================================
-
-
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -23,7 +21,7 @@ entity vga_ctrl is
         DISPLAY_PXL_SIDE: positive range 256 to 512 := 512;
         -- let BLANKING_PXLS >= 88
         MIN_BLANKING_PXLS: positive range 88 to natural'high := 88;
-        DISPLAY_FPS_HZ: positive range 1 to CLK_FREQ_HZ / ((DISPLAY_PXL_SIDE + MIN_BLANKING_PXLS) ** 2)
+        DISPLAY_FPS_HZ: positive := 60
     );
     port(
         clk: in std_logic;
@@ -46,8 +44,19 @@ entity vga_ctrl is
 end entity vga_ctrl;
 
 architecture RTL of vga_ctrl is
-    constant BLANKING_PXLS : natural := maximum(MIN_BLANKING_PXLS, 
-                                                integer(sqrt(real(CLK_FREQ_HZ) / real(DISPLAY_FPS_HZ))) - DISPLAY_PXL_SIDE);
+    function max(x : integer; y : integer) return integer is
+    begin
+        if x >= y then
+            return x;
+        else 
+            return y;
+        end if;
+    end function;
+    constant MAX_FPS : integer := CLK_FREQ_HZ / ((DISPLAY_PXL_SIDE + MIN_BLANKING_PXLS) ** 2);
+    
+    constant BLANKING_PXLS : natural := max(MIN_BLANKING_PXLS, 
+                                            integer(sqrt(real(CLK_FREQ_HZ) / real(DISPLAY_FPS_HZ))) - DISPLAY_PXL_SIDE);
+    -- constant BLANKING_PXLS : natural := 100;
     signal h_cnt : natural := 0;
     signal h_overflow : std_logic := '0';
     signal v_cnt : natural := 0;
@@ -58,6 +67,11 @@ architecture RTL of vga_ctrl is
 
     signal rgb : std_logic_vector(3 downto 0);
 begin
+
+    assert DISPLAY_FPS_HZ <= MAX_FPS
+        report "Unable to ensure the desired display FPS. Please choose value <= " & integer'image(MAX_FPS)
+        severity error;
+    
 
 horizontal_cnt : entity work.overflow_counter
     generic map(
@@ -135,7 +149,7 @@ img_buf_inst : entity work.img_buf
         data_o => rgb
     );
 
-vga_r_o <= rgb;
+vga_r_o <= std_logic_vector(maximum(unsigned(rgb), 56));
 vga_g_o <= rgb;
 vga_b_o <= rgb;
 
