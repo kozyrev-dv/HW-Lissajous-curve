@@ -3,6 +3,7 @@ library ieee;
     use ieee.numeric_std.all;
     use ieee.math_real.all;
 
+use work.basics_p;
 entity overflow_counter is
     generic(
         SYNC_SIZE : natural := 600
@@ -19,6 +20,9 @@ end entity overflow_counter;
 architecture RTL of overflow_counter is
     
 begin
+
+    basics_p.print_dgb(cnt_o'simple_name & " length is " & integer'image(cnt_o'length));
+
     counter : process (clk) is
     begin
         if rising_edge(clk) then

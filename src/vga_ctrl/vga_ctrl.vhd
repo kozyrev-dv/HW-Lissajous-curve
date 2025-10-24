@@ -15,13 +15,14 @@ library ieee;
     use ieee.numeric_std.all;
     use ieee.math_real.all;
 
+use work.basics_p;
 entity vga_ctrl is
     generic (
         CLK_FREQ_HZ: positive := 50_000_000;
         DISPLAY_PXL_SIDE: positive range 256 to 512 := 512;
         -- let BLANKING_PXLS >= 88
         MIN_BLANKING_PXLS: positive range 88 to natural'high := 88;
-        DISPLAY_FPS_HZ: positive := 60
+        DISPLAY_FPS_HZ: positive := 10
     );
     port(
         clk: in std_logic;
@@ -44,25 +45,21 @@ entity vga_ctrl is
 end entity vga_ctrl;
 
 architecture RTL of vga_ctrl is
-    function max(x : integer; y : integer) return integer is
-    begin
-        if x >= y then
-            return x;
-        else 
-            return y;
-        end if;
-    end function;
+    
     constant MAX_FPS : integer := CLK_FREQ_HZ / ((DISPLAY_PXL_SIDE + MIN_BLANKING_PXLS) ** 2);
     
-    constant BLANKING_PXLS : natural := max(MIN_BLANKING_PXLS, 
+    constant BLANKING_PXLS : natural := basics_p.max(MIN_BLANKING_PXLS, 
                                             integer(sqrt(real(CLK_FREQ_HZ) / real(DISPLAY_FPS_HZ))) - DISPLAY_PXL_SIDE);
-    -- constant BLANKING_PXLS : natural := 100;
-    signal h_cnt : natural := 0;
-    signal h_overflow : std_logic := '0';
-    signal v_cnt : natural := 0;
+
+    constant PXL_CNTR_WIDTH : integer := natural(ceil(log2(real(DISPLAY_PXL_SIDE + BLANKING_PXLS))));
+    constant IMG_ADR_WIDTH : integer := natural(ceil(log2(real(DISPLAY_PXL_SIDE))));
     
-    signal img_x_adr : natural := 0;
-    signal img_y_adr : natural := 0;
+    signal h_cnt : std_logic_vector(PXL_CNTR_WIDTH - 1 downto 0):= (others => '0');
+    signal h_overflow : std_logic := '0';
+    signal v_cnt : std_logic_vector(PXL_CNTR_WIDTH - 1 downto 0):= (others => '0');
+    
+    signal img_x_adr : std_logic_vector(IMG_ADR_WIDTH - 1 downto 0):= (others => '0');
+    signal img_y_adr : std_logic_vector(IMG_ADR_WIDTH - 1 downto 0):= (others => '0');
     signal pxl_is_draw : std_logic := '0';
 
     signal rgb : std_logic_vector(3 downto 0);
@@ -72,6 +69,16 @@ begin
         report "Unable to ensure the desired display FPS. Please choose value <= " & integer'image(MAX_FPS)
         severity error;
     
+    basics_p.print_dgb("MAX_FPS length is " & integer'image(MAX_FPS));
+    basics_p.print_dgb("BLANKING_PXLS length is " & integer'image(BLANKING_PXLS));
+    basics_p.print_dgb("PXL_CNTR_WIDTH length is " & integer'image(PXL_CNTR_WIDTH));
+    basics_p.print_dgb("IMG_ADR_WIDTH length is " & integer'image(IMG_ADR_WIDTH));
+
+    basics_p.print_dgb("h_cnt length is " & integer'image(h_cnt'length));
+    basics_p.print_dgb("v_cnt length is " & integer'image(v_cnt'length));
+
+    basics_p.print_dgb("img_x_adr length is " & integer'image(img_x_adr'length));
+    basics_p.print_dgb("img_y_adr length is " & integer'image(img_y_adr'length));
 
 horizontal_cnt : entity work.overflow_counter
     generic map(
@@ -81,7 +88,7 @@ horizontal_cnt : entity work.overflow_counter
         clk    => clk,
         rst_n  => rst_n,
         ena    => '0',
-        cnt_o  => std_logic_vector(h_cnt),
+        cnt_o  => h_cnt,
         full_o => h_overflow
     );
 hsync_gen : entity work.sync_gen
@@ -93,7 +100,7 @@ hsync_gen : entity work.sync_gen
         POLARITY     => TRUE
     )
     port map(
-        cnt_i  => std_logic_vector(h_cnt),
+        cnt_i  => h_cnt,
         sync_o => vga_hsync_o
     );
 
@@ -105,7 +112,7 @@ vertical_cnt : entity work.overflow_counter
         clk    => clk,
         rst_n  => rst_n,
         ena    => h_overflow,
-        cnt_o  => std_logic_vector(v_cnt)
+        cnt_o  => v_cnt
     );
 vsync_gen : entity work.sync_gen
     generic map(
@@ -116,7 +123,7 @@ vsync_gen : entity work.sync_gen
         POLARITY     => TRUE
     )
     port map(
-        cnt_i  => std_logic_vector(v_cnt),
+        cnt_i  => v_cnt,
         sync_o => vga_vsync_o
     );
 
@@ -126,10 +133,10 @@ vga_address_gen_inst : entity work.vga_address_gen
         BLANKING_PXLS    => BLANKING_PXLS
     )
     port map(
-        h_cnt    => std_logic_vector(h_cnt),
-        v_cnt    => std_logic_vector(v_cnt),
-        x        => std_logic_vector(img_x_adr),
-        y        => std_logic_vector(img_y_adr),
+        h_cnt    => h_cnt,
+        v_cnt    => v_cnt,
+        x        => img_x_adr,
+        y        => img_y_adr,
         drawable => pxl_is_draw
     );
 
@@ -141,15 +148,15 @@ img_buf_inst : entity work.img_buf
     port map(
         clk    => clk,
         rst_n  => rst_n,
-        filled => ready_o,
-        we     => valid_i,
-        data_i => img_i,
-        re => pxl_is_draw,
-        rd_adr => std_logic_vector(img_x_adr + img_y_adr * DISPLAY_PXL_SIDE),
-        data_o => rgb
+        filled_o    => ready_o,
+        we_i    => valid_i,
+        data_i  => img_i,
+        re_i    => pxl_is_draw,
+        rd_adr_i    => std_logic_vector(unsigned(img_x_adr) + unsigned(img_y_adr) * DISPLAY_PXL_SIDE),
+        data_o  => rgb
     );
 
-vga_r_o <= std_logic_vector(maximum(unsigned(rgb), 56));
+vga_r_o <= rgb;
 vga_g_o <= rgb;
 vga_b_o <= rgb;
 

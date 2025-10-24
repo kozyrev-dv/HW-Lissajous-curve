@@ -11,17 +11,17 @@ entity img_buf is
     port(
         clk : in std_logic;
         rst_n : in std_logic;
-        filled : out std_logic;
+        filled_o : out std_logic;
         --=============================================
         -- Write Side
         --=============================================
-        we : in std_logic;
+        we_i : in std_logic;
         data_i : in std_logic_vector(3 downto 0);
         --=============================================
         -- Read Side
         --=============================================
-        rd_adr : in std_logic_vector(natural(ceil(log2(real(IMG_WIDTH * IMG_HEIGHT)))) downto 0);
-        re : in std_logic;
+        rd_adr_i : in std_logic_vector(natural(ceil(log2(real(IMG_WIDTH * IMG_HEIGHT)))) downto 0);
+        re_i : in std_logic;
         data_o : out std_logic_vector(3 downto 0)
     );
 end entity img_buf;
@@ -40,19 +40,19 @@ begin
         if rising_edge(clk) then
             if rst_n = '0' then
                 wr_adr <= 0;
-                filled <= '0';
+                filled_o <= '0';
             else
-                if we = '1' and filled = '0' then
+                if we_i = '1' and filled_o = '0' then
                     if wr_adr = mem_len - 1 then
                         wr_adr <= 0;
-                        filled <= '1';
+                        filled_o <= '1';
                     else
                         wr_adr <= wr_adr + 1;
-                        filled <= '0';
+                        filled_o <= '0';
                     end if;
-                elsif we = '0' and filled = '1' then
+                elsif we_i = '0' and filled_o = '1' then
                     wr_adr <= 0;
-                    filled <= '0';
+                    filled_o <= '0';
                 end if;
             end if;
         end if;
@@ -62,13 +62,13 @@ begin
     memory : process (clk) is
     begin
         if (rising_edge(clk)) then
-            if (we = '1' and filled = '0') then
+            if (we_i = '1' and filled_o = '0') then
                 ram_block(wr_adr) <= data_i;
             end if;
-            mem_data_o <= ram_block(unsigned(rd_adr));
+            mem_data_o <= ram_block(to_integer(unsigned(rd_adr_i)));
         end if;
     end process memory;
     
-    data_o <= mem_data_o when re = '1' else (others => '0');
+    data_o <= mem_data_o when re_i = '1' else (others => '0');
 
 end architecture RTL;
