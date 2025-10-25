@@ -89,7 +89,7 @@ horizontal_cnt : entity work.overflow_counter
         rst_n  => rst_n,
         ena    => not ready_o,
         cnt_o  => h_cnt,
-        full_o => h_overflow
+        overflow_o => h_overflow
     );
 hsync_gen : entity work.sync_gen
     generic map(
