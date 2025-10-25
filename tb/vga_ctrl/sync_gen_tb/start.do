@@ -13,5 +13,5 @@ vcom ../../../src/basics_p.vhd -work work -O0 -2008
 vcom ../../../src/vga_ctrl/sync_gen.vhd -work work -O0 -2008
 vcom ./sync_gen_tb.vhd -work work -O0 -2008
 vsim -msgmode both sync_gen_tb
-# do wave.do
-# run 1000 ns
+do wave.do
+run 5000 ns
