@@ -6,6 +6,7 @@ add wave -noupdate /img_buf_tb/filled_o
 add wave -noupdate /img_buf_tb/is_write_allow
 add wave -noupdate /img_buf_tb/is_writing
 add wave -noupdate /img_buf_tb/we_i
+add wave -noupdate /img_buf_tb/img_buf_inst/wr_adr
 add wave -noupdate -radix hexadecimal /img_buf_tb/data_i
 add wave -noupdate /img_buf_tb/is_read_allow
 add wave -noupdate /img_buf_tb/is_reading
@@ -15,7 +16,7 @@ add wave -noupdate -radix hexadecimal /img_buf_tb/data_o
 add wave -noupdate /img_buf_tb/img_buf_inst/wr_adr
 add wave -noupdate -expand /img_buf_tb/img_buf_inst/ram_block
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {200999 ps} 0}
+WaveRestoreCursors {{Cursor 1} {389010 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 211
 configure wave -valuecolwidth 100
@@ -31,4 +32,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {251851 ps} {277861 ps}
+WaveRestoreZoom {358800 ps} {466300 ps}
