@@ -13,5 +13,5 @@ vcom ../../../src/basics_p.vhd -work work -O0 -2008
 vcom ../../../src/vga_ctrl/img_buf.vhd -work work -O0 -2008
 vcom ./img_buf_tb.vhd -work work -O0 -2008
 vsim -msgmode both img_buf_tb
-# do wave.do
-# run 1000 ns
+do wave.do
+run 10000 ns

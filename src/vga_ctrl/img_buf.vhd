@@ -12,7 +12,7 @@ entity img_buf is
     port(
         clk : in std_logic;
         rst_n : in std_logic;
-        filled_o : out std_logic;
+        filled_o : out std_logic := '0';
         --=============================================
         -- Write Side
         --=============================================
@@ -23,14 +23,14 @@ entity img_buf is
         --=============================================
         rd_adr_i : in std_logic_vector(basics_p.clog2(IMG_WIDTH * IMG_HEIGHT) - 1 downto 0);
         re_i : in std_logic;
-        data_o : out std_logic_vector(3 downto 0)
+        data_o : out std_logic_vector(3 downto 0) := (others => '0')
     );
 end entity img_buf;
 
 architecture RTL of img_buf is
     constant mem_len : integer := IMG_WIDTH * IMG_HEIGHT;
     
-    type MEM is array (0 to mem_len) of std_logic_vector(3 downto 0);
+    type MEM is array (0 to mem_len - 1) of std_logic_vector(3 downto 0);
     signal ram_block : MEM;
     signal wr_adr : natural := 0;
     signal mem_data_o : std_logic_vector(3 downto 0);
