@@ -21,6 +21,7 @@ end entity vga_address_gen;
 architecture RTL of vga_address_gen is
     
 begin
+    
     drawable <= '1' when (unsigned(h_cnt) < DISPLAY_PXL_SIDE) and (unsigned(v_cnt) < DISPLAY_PXL_SIDE)
                 else '0';
 

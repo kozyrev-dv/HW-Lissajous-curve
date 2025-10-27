@@ -31,6 +31,15 @@ architecture RTL of img_buf is
     constant mem_len : integer := IMG_WIDTH * IMG_HEIGHT;
     
     type MEM is array (0 to mem_len - 1) of std_logic_vector(3 downto 0);
+    -- function initialize_ram return MEM is
+    --     variable result : MEM;
+    -- begin 
+    --     for i in 0 to mem_len - 1 loop
+    --         result(i) := std_logic_vector(to_unsigned(i, 4));
+    --     end loop; 
+    --     return result;
+    -- end initialize_ram;
+
     signal ram_block : MEM;
     signal wr_adr : natural := 0;
     signal mem_data_o : std_logic_vector(3 downto 0);

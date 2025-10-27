@@ -10,8 +10,9 @@
 
 vlib work
 vcom ../../../src/basics_p.vhd -work work -O0 -2008
+vcom ../../../src/vga_ctrl/img_buf.vhd ../../../src/vga_ctrl/overflow_counter.vhd ../../../src/vga_ctrl/sync_gen.vhd ../../../src/vga_ctrl/vga_address_gen.vhd -work work -O0 -2008
 vcom ../../../src/vga_ctrl/vga_ctrl.vhd -work work -O0 -2008
 vcom ./vga_ctrl_tb.vhd -work work -O0 -2008
 vsim -msgmode both vga_ctrl_tb
-# do wave.do
-# run 1000 ns
+do wave.do
+run 100000 ns

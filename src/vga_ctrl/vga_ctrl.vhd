@@ -19,10 +19,10 @@ use work.basics_p;
 entity vga_ctrl is
     generic (
         CLK_FREQ_HZ: positive := 50_000_000;
-        DISPLAY_PXL_SIDE: positive range 256 to 512 := 512;
+        DISPLAY_PXL_SIDE: positive range 2 to 512 := 16;
         -- let BLANKING_PXLS >= 88
-        MIN_BLANKING_PXLS: positive range 88 to natural'high := 88;
-        DISPLAY_FPS_HZ: positive := 10
+        MIN_BLANKING_PXLS: positive range 3 to natural'high := 6;
+        DISPLAY_FPS_HZ: positive := 83305
     );
     port(
         clk: in std_logic;
@@ -152,7 +152,7 @@ img_buf_inst : entity work.img_buf
         we_i    => valid_i,
         data_i  => img_i,
         re_i    => pxl_is_draw,
-        rd_adr_i    => std_logic_vector(unsigned(img_x_adr) + unsigned(img_y_adr) * DISPLAY_PXL_SIDE),
+        rd_adr_i    => std_logic_vector(to_unsigned(to_integer(unsigned(img_x_adr)) + to_integer(unsigned(img_y_adr)) * DISPLAY_PXL_SIDE, basics_p.clog2(DISPLAY_PXL_SIDE * DISPLAY_PXL_SIDE))),
         data_o  => rgb
     );
 
