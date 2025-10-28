@@ -22,8 +22,8 @@ entity vga_ctrl is
         DISPLAY_PXL_W: positive range 2 to positive'high := 16;
         DISPLAY_PXL_H: positive range 2 to positive'high := 16;
 
-        IMG_PXL_W: positive range 2 to 512 := 16;
-        IMG_PXL_H: positive range 2 to 512 := 16;
+        IMG_PXL_W: positive range 2 to positive'high := 16;
+        IMG_PXL_H: positive range 2 to positive'high := 16;
         
         -- let BLANKING_PXLS >= 88
         -- MIN_BLANKING_PXLS: positive range 3 to natural'high := 6;
