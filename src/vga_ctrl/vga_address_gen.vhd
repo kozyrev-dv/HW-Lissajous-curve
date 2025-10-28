@@ -6,14 +6,16 @@ library ieee;
 use work.basics_p;
 entity vga_address_gen is
     generic(
-        DISPLAY_PXL_SIDE : positive := 512;
-        BLANKING_PXLS : positive := 512
+        DISPLAY_PXL_W : positive := 512;
+        DISPLAY_PXL_H : positive := 512;
+        BLANKING_PXLS_W : positive := 512;
+        BLANKING_PXLS_H : positive := 512
     );
     port(
-        h_cnt : in std_logic_vector(basics_p.clog2(DISPLAY_PXL_SIDE + BLANKING_PXLS) - 1 downto 0);
-        v_cnt : in std_logic_vector(basics_p.clog2(DISPLAY_PXL_SIDE + BLANKING_PXLS) - 1 downto 0);
-        x : out std_logic_vector(basics_p.clog2(DISPLAY_PXL_SIDE) - 1 downto 0);
-        y : out std_logic_vector(basics_p.clog2(DISPLAY_PXL_SIDE) - 1 downto 0);
+        h_cnt : in std_logic_vector(basics_p.clog2(DISPLAY_PXL_W + BLANKING_PXLS_W) - 1 downto 0);
+        v_cnt : in std_logic_vector(basics_p.clog2(DISPLAY_PXL_H + BLANKING_PXLS_H) - 1 downto 0);
+        x : out std_logic_vector(basics_p.clog2(DISPLAY_PXL_W) - 1 downto 0);
+        y : out std_logic_vector(basics_p.clog2(DISPLAY_PXL_H) - 1 downto 0);
         drawable : out std_logic
     );
 end entity vga_address_gen;
@@ -22,7 +24,7 @@ architecture RTL of vga_address_gen is
     
 begin
     
-    drawable <= '1' when (unsigned(h_cnt) < DISPLAY_PXL_SIDE) and (unsigned(v_cnt) < DISPLAY_PXL_SIDE)
+    drawable <= '1' when (unsigned(h_cnt) < DISPLAY_PXL_W) and (unsigned(v_cnt) < DISPLAY_PXL_H)
                 else '0';
 
     x <= h_cnt(x'length - 1 downto 0) when drawable else (others => '0');

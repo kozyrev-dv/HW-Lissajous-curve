@@ -12,8 +12,11 @@ end entity img_buf_tb;
 
 architecture RTL of img_buf_tb is
     constant CLK_PERIOD : time := 2 ns;
-    constant IMG_SIDE : integer := 8;
-    constant ADR_WIDTH : integer := basics_p.clog2(IMG_SIDE * IMG_SIDE);
+    constant DISPLAY_WIDTH : integer := 8;
+    constant DISPLAY_HEIGHT : integer := 10;
+    constant IMG_WIDTH : integer := 6;
+    constant IMG_HEIGHT : integer := 6;
+    constant ADR_WIDTH : integer := basics_p.clog2(DISPLAY_WIDTH * DISPLAY_HEIGHT);
     
     signal clk : std_logic := '0';
     signal rst_n : std_logic := '1';
@@ -34,8 +37,10 @@ begin
 
     img_buf_inst : entity work.img_buf
         generic map(
-            IMG_WIDTH  => IMG_SIDE,
-            IMG_HEIGHT => IMG_SIDE
+            DISPLAY_WIDTH  => DISPLAY_WIDTH,
+            DISPLAY_HEIGHT => DISPLAY_HEIGHT,
+            IMG_WIDTH => IMG_WIDTH,
+            IMG_HEIGHT => IMG_HEIGHT
         )
         port map(
             clk      => clk,
@@ -56,7 +61,7 @@ begin
         while TRUE loop
             wait until is_read_allow;
             re_i <= '0' when read_loop_num = 0 else '1';
-            read_loop : for j in 0 to IMG_SIDE * IMG_SIDE - 1 loop
+            read_loop : for j in 0 to DISPLAY_WIDTH * DISPLAY_HEIGHT - 1 loop
                 is_reading <= TRUE;
                 rd_adr_i <= to_unsigned(read_loop.j, rd_adr_i'length);
                 wait until rising_edge(clk);
@@ -75,7 +80,7 @@ begin
             if i = 0 then we_i<='0'; else report "assert we_i" severity note; we_i<='1'; end if;
             if filled_o /= '0' then wait until filled_o = '0'; end if;
 
-            write_loop : for j in 0 to IMG_SIDE * IMG_SIDE - 1 loop
+            write_loop : for j in 0 to IMG_WIDTH * IMG_HEIGHT - 1 loop
                 is_writing <= TRUE;
                 if filled_o = '1' then exit write_loop; end if;
                 data_i <= to_unsigned(write_loop.j + i, data_i'length);

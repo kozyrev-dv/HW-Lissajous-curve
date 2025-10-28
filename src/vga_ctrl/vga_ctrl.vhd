@@ -19,9 +19,20 @@ use work.basics_p;
 entity vga_ctrl is
     generic (
         CLK_FREQ_HZ: positive := 50_000_000;
-        DISPLAY_PXL_SIDE: positive range 2 to 512 := 16;
+        DISPLAY_PXL_W: positive range 2 to positive'high := 16;
+        DISPLAY_PXL_H: positive range 2 to positive'high := 16;
+
+        IMG_PXL_W: positive range 2 to 512 := 16;
+        IMG_PXL_H: positive range 2 to 512 := 16;
+        
         -- let BLANKING_PXLS >= 88
-        MIN_BLANKING_PXLS: positive range 3 to natural'high := 6;
+        -- MIN_BLANKING_PXLS: positive range 3 to natural'high := 6;
+        FRONT_PORCH_W : positive range 2 to positive'high := 2;
+        SYNC_PULSE_W : positive range 2 to positive'high := 2;
+        BACK_PORCH_W : positive range 2 to positive'high := 2;
+        FRONT_PORCH_H : positive range 2 to positive'high := 2;
+        SYNC_PULSE_H : positive range 2 to positive'high := 2;
+        BACK_PORCH_H : positive range 2 to positive'high := 2;
         DISPLAY_FPS_HZ: positive := 83305
     );
     port(
@@ -46,20 +57,22 @@ end entity vga_ctrl;
 
 architecture RTL of vga_ctrl is
     
-    constant MAX_FPS : integer := CLK_FREQ_HZ / ((DISPLAY_PXL_SIDE + MIN_BLANKING_PXLS) ** 2);
+    constant BLANKING_PXLS_W : integer := FRONT_PORCH_W + SYNC_PULSE_W + BACK_PORCH_W;
+    constant BLANKING_PXLS_H : integer := FRONT_PORCH_H + SYNC_PULSE_H + BACK_PORCH_H;
     
-    constant BLANKING_PXLS : natural := basics_p.max(MIN_BLANKING_PXLS, 
-                                            integer(sqrt(real(CLK_FREQ_HZ) / real(DISPLAY_FPS_HZ))) - DISPLAY_PXL_SIDE);
+    constant MAX_FPS : integer := CLK_FREQ_HZ / ((DISPLAY_PXL_W + BLANKING_PXLS_W) * (DISPLAY_PXL_H + BLANKING_PXLS_H));
 
-    constant PXL_CNTR_WIDTH : integer := basics_p.clog2(DISPLAY_PXL_SIDE + BLANKING_PXLS);
-    constant IMG_ADR_WIDTH : integer := basics_p.clog2(DISPLAY_PXL_SIDE);
+    constant PXL_X_CNTR_WIDTH : integer := basics_p.clog2(DISPLAY_PXL_W + BLANKING_PXLS_W);
+    constant PXL_Y_CNTR_WIDTH : integer := basics_p.clog2(DISPLAY_PXL_H + BLANKING_PXLS_H);
+    constant IMG_ADR_X_WIDTH : integer := basics_p.clog2(DISPLAY_PXL_W);
+    constant IMG_ADR_Y_WIDTH : integer := basics_p.clog2(DISPLAY_PXL_H);
     
-    signal h_cnt : std_logic_vector(PXL_CNTR_WIDTH - 1 downto 0):= (others => '0');
+    signal h_cnt : std_logic_vector(PXL_X_CNTR_WIDTH - 1 downto 0):= (others => '0');
     signal h_overflow : std_logic := '0';
-    signal v_cnt : std_logic_vector(PXL_CNTR_WIDTH - 1 downto 0):= (others => '0');
+    signal v_cnt : std_logic_vector(PXL_Y_CNTR_WIDTH - 1 downto 0):= (others => '0');
     
-    signal img_x_adr : std_logic_vector(IMG_ADR_WIDTH - 1 downto 0):= (others => '0');
-    signal img_y_adr : std_logic_vector(IMG_ADR_WIDTH - 1 downto 0):= (others => '0');
+    signal img_x_adr : std_logic_vector(IMG_ADR_X_WIDTH - 1 downto 0):= (others => '0');
+    signal img_y_adr : std_logic_vector(IMG_ADR_Y_WIDTH - 1 downto 0):= (others => '0');
     signal pxl_is_draw : std_logic := '0';
     
     signal filled_o : std_logic;
@@ -71,12 +84,15 @@ begin
         severity error;
     
     basics_p.print_dgb("MAX_FPS length is " & integer'image(MAX_FPS));
-    basics_p.print_dgb("BLANKING_PXLS length is " & integer'image(BLANKING_PXLS));
-    basics_p.print_dgb("PXL_CNTR_WIDTH length is " & integer'image(PXL_CNTR_WIDTH));
-    basics_p.print_dgb("IMG_ADR_WIDTH length is " & integer'image(IMG_ADR_WIDTH));
+    basics_p.print_dgb("BLANKING_PXLS_W length is " & integer'image(BLANKING_PXLS_W));
+    basics_p.print_dgb("BLANKING_PXLS_H length is " & integer'image(BLANKING_PXLS_H));
+    basics_p.print_dgb("PXL_X_CNTR_WIDTH length is " & integer'image(PXL_X_CNTR_WIDTH));
+    basics_p.print_dgb("PXL_Y_CNTR_WIDTH length is " & integer'image(PXL_Y_CNTR_WIDTH));
+    basics_p.print_dgb("IMG_ADR_X_WIDTH length is " & integer'image(IMG_ADR_X_WIDTH));
+    basics_p.print_dgb("IMG_ADR_Y_WIDTH length is " & integer'image(IMG_ADR_Y_WIDTH));
     
-    basics_p.print_dgb("H-Frequency is " & real'image(real(CLK_FREQ_HZ) / real(DISPLAY_PXL_SIDE + BLANKING_PXLS)));
-    basics_p.print_dgb("V-Frequency is " & real'image(real(CLK_FREQ_HZ) / (real(DISPLAY_PXL_SIDE + BLANKING_PXLS)**2)));
+    basics_p.print_dgb("H-Frequency is " & real'image(real(CLK_FREQ_HZ) / real(DISPLAY_PXL_W + BLANKING_PXLS_W)));
+    basics_p.print_dgb("V-Frequency is " & real'image(real(CLK_FREQ_HZ) / (real((DISPLAY_PXL_W + BLANKING_PXLS_W)*(DISPLAY_PXL_H + BLANKING_PXLS_H)))));
 
     basics_p.print_dgb("h_cnt length is " & integer'image(h_cnt'length));
     basics_p.print_dgb("v_cnt length is " & integer'image(v_cnt'length));
@@ -87,7 +103,7 @@ begin
 
 horizontal_cnt : entity work.overflow_counter
     generic map(
-        SYNC_SIZE => DISPLAY_PXL_SIDE + BLANKING_PXLS
+        SYNC_SIZE => DISPLAY_PXL_W + BLANKING_PXLS_W
     )
     port map(
         clk    => clk,
@@ -98,10 +114,10 @@ horizontal_cnt : entity work.overflow_counter
     );
 hsync_gen : entity work.sync_gen
     generic map(
-        DISPLAY_SIZE => DISPLAY_PXL_SIDE,
-        FRONT_PORCH  => BLANKING_PXLS / 3,
-        SYNC_PULSE   => BLANKING_PXLS / 3,
-        BACK_PORCH   => BLANKING_PXLS / 3,
+        DISPLAY_SIZE => DISPLAY_PXL_W,
+        FRONT_PORCH  => FRONT_PORCH_W,
+        SYNC_PULSE   => SYNC_PULSE_W,
+        BACK_PORCH   => BACK_PORCH_W,
         POLARITY     => TRUE
     )
     port map(
@@ -111,7 +127,7 @@ hsync_gen : entity work.sync_gen
 
 vertical_cnt : entity work.overflow_counter
     generic map(
-        SYNC_SIZE => DISPLAY_PXL_SIDE + BLANKING_PXLS
+        SYNC_SIZE => DISPLAY_PXL_H + BLANKING_PXLS_H
     )
     port map(
         clk    => clk,
@@ -121,10 +137,10 @@ vertical_cnt : entity work.overflow_counter
     );
 vsync_gen : entity work.sync_gen
     generic map(
-        DISPLAY_SIZE => DISPLAY_PXL_SIDE,
-        FRONT_PORCH  => BLANKING_PXLS / 3,
-        SYNC_PULSE   => BLANKING_PXLS / 3,
-        BACK_PORCH   => BLANKING_PXLS / 3,
+        DISPLAY_SIZE => DISPLAY_PXL_H,
+        FRONT_PORCH  => FRONT_PORCH_H,
+        SYNC_PULSE   => SYNC_PULSE_H,
+        BACK_PORCH   => BACK_PORCH_H,
         POLARITY     => TRUE
     )
     port map(
@@ -134,8 +150,10 @@ vsync_gen : entity work.sync_gen
 
 vga_address_gen_inst : entity work.vga_address_gen
     generic map(
-        DISPLAY_PXL_SIDE => DISPLAY_PXL_SIDE,
-        BLANKING_PXLS    => BLANKING_PXLS
+        DISPLAY_PXL_W => DISPLAY_PXL_W,
+        DISPLAY_PXL_H => DISPLAY_PXL_H,
+        BLANKING_PXLS_W    => BLANKING_PXLS_W,
+        BLANKING_PXLS_H    => BLANKING_PXLS_H
     )
     port map(
         h_cnt    => h_cnt,
@@ -147,8 +165,10 @@ vga_address_gen_inst : entity work.vga_address_gen
 
 img_buf_inst : entity work.img_buf
     generic map(
-        IMG_WIDTH  => DISPLAY_PXL_SIDE,
-        IMG_HEIGHT => DISPLAY_PXL_SIDE
+        DISPLAY_WIDTH  => DISPLAY_PXL_W,
+        DISPLAY_HEIGHT => DISPLAY_PXL_H,
+        IMG_WIDTH => IMG_PXL_W,
+        IMG_HEIGHT => IMG_PXL_H
     )
     port map(
         clk    => clk,
@@ -157,7 +177,7 @@ img_buf_inst : entity work.img_buf
         we_i    => valid_i,
         data_i  => img_i,
         re_i    => pxl_is_draw,
-        rd_adr_i    => std_logic_vector(to_unsigned(to_integer(unsigned(img_x_adr)) + to_integer(unsigned(img_y_adr)) * DISPLAY_PXL_SIDE, basics_p.clog2(DISPLAY_PXL_SIDE * DISPLAY_PXL_SIDE))),
+        rd_adr_i    => std_logic_vector(to_unsigned(to_integer(unsigned(img_x_adr)) + to_integer(unsigned(img_y_adr)) * DISPLAY_PXL_W, basics_p.clog2(DISPLAY_PXL_W * DISPLAY_PXL_W))),
         data_o  => rgb
     );
 

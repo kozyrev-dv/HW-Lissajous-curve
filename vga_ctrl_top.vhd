@@ -18,12 +18,14 @@ end entity vga_ctrl_top;
 
 architecture RTL of vga_ctrl_top is
     constant CLK_FREQ_HZ: positive := 50_000_000;
-    constant DISPLAY_PXL_SIDE: positive range 2 to 512 := 480;
-    constant MIN_BLANKING_PXLS: positive range 3 to natural'high := 440;
+    constant DISPLAY_PXL_W: positive range 2 to positive'high := 640;
+    constant DISPLAY_PXL_H: positive range 2 to positive'high := 480;
+    constant IMG_PXL_W: positive range 2 to positive'high := 480;
+    constant IMG_PXL_H: positive range 2 to positive'high := 480;
     constant DISPLAY_FPS_HZ: positive := 55;
     
     signal img_i : std_logic_vector(3 downto 0) := (others => '0');
-    signal cnt : unsigned(basics_p.clog2(DISPLAY_PXL_SIDE * DISPLAY_PXL_SIDE) - 1 downto 0) := (others => '0');
+    signal cnt : unsigned(basics_p.clog2(IMG_PXL_W * IMG_PXL_H) - 1 downto 0) := (others => '0');
     signal valid_i : std_logic := '1';
 begin
 
@@ -45,14 +47,22 @@ begin
         end if;
     end process init;
 
-    img_i <= std_logic_vector(cnt(8 downto 5));
+    img_i <= (others => '1');
 
     vga_ctrl_inst : entity work.vga_ctrl
         generic map(
             CLK_FREQ_HZ       => CLK_FREQ_HZ,
-            DISPLAY_PXL_SIDE  => DISPLAY_PXL_SIDE,
-            MIN_BLANKING_PXLS => MIN_BLANKING_PXLS,
-            DISPLAY_FPS_HZ    => DISPLAY_FPS_HZ
+            DISPLAY_PXL_W  => DISPLAY_PXL_W,
+            DISPLAY_PXL_H  => DISPLAY_PXL_H,
+            IMG_PXL_W => IMG_PXL_W,
+            IMG_PXL_H => IMG_PXL_H,
+            FRONT_PORCH_W  => 316, -- sum = 950
+            SYNC_PULSE_W   => 317,
+            BACK_PORCH_W   => 316,
+            FRONT_PORCH_H  => 14, -- sum = 44
+            SYNC_PULSE_H   => 15,
+            BACK_PORCH_H   => 14,
+            DISPLAY_FPS_HZ    => 60
         )
         port map(
             clk         => clk,

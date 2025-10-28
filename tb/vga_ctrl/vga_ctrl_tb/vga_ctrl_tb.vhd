@@ -13,8 +13,10 @@ architecture RTL of vga_ctrl_tb is
     constant CLK_SIM_PERIOD : time := 2 ns;
 
     constant CLK_FREQ_HZ : integer := 50_000_000;
-    constant DISPLAY_PXL_SIDE : integer := 16;
-    constant MIN_BLANKING_PXLS : integer := 6;
+    constant DISPLAY_PXL_W  : integer := 10;
+    constant DISPLAY_PXL_H  : integer := 8;
+    constant IMG_PXL_W : integer := 6;
+    constant IMG_PXL_H : integer := 6;
     constant DISPLAY_FPS_HZ : integer := 83305;
     
     signal clk : std_logic := '0';
@@ -36,10 +38,18 @@ begin
 
     vga_ctrl_inst : entity work.vga_ctrl
         generic map(
-            CLK_FREQ_HZ       => CLK_FREQ_HZ,
-            DISPLAY_PXL_SIDE  => DISPLAY_PXL_SIDE,
-            MIN_BLANKING_PXLS => MIN_BLANKING_PXLS,
-            DISPLAY_FPS_HZ    => DISPLAY_FPS_HZ
+            CLK_FREQ_HZ    => CLK_FREQ_HZ,
+            DISPLAY_PXL_W  => DISPLAY_PXL_W,
+            DISPLAY_PXL_H  => DISPLAY_PXL_H,
+            IMG_PXL_W => IMG_PXL_W,
+            IMG_PXL_H => IMG_PXL_H,
+            FRONT_PORCH_W  => 2,
+            SYNC_PULSE_W   => 5,
+            BACK_PORCH_W   => 2,
+            FRONT_PORCH_H  => 2,
+            SYNC_PULSE_H   => 5,
+            BACK_PORCH_H   => 2,
+            DISPLAY_FPS_HZ => DISPLAY_FPS_HZ
         )
         port map(
             clk         => clk,
@@ -47,7 +57,6 @@ begin
             img_i       => img_i,
             valid_i     => valid_i,
             ready_o     => ready_o,
-
             vga_r_o     => vga_r_o,
             vga_g_o     => vga_g_o,
             vga_b_o     => vga_b_o,
@@ -83,7 +92,7 @@ begin
         wait until write_finished;
         write_start <= FALSE;
 
-        for i in 0 to DISPLAY_PXL_SIDE - 1 loop
+        for i in 0 to DISPLAY_PXL_H - 1 loop
             wait until rising_edge(vga_vsync_o);
             report "VGA_Vsync counted = " & integer'image(i) severity note;
             
@@ -101,9 +110,9 @@ begin
             write_finished <= FALSE;
             report boolean'image(write_finished) severity note;
 
-            for i in 0 to DISPLAY_PXL_SIDE * DISPLAY_PXL_SIDE - 1 loop
+            for i in 0 to IMG_PXL_W * IMG_PXL_H - 1 loop
                 valid_i <= '1';
-                img_i <= std_logic_vector(to_unsigned((i + 1) mod 16, img_i'length));
+                img_i <= std_logic_vector(to_unsigned((i + 0) mod 16, img_i'length));
                 wait until rising_edge(clk);
             end loop;
 

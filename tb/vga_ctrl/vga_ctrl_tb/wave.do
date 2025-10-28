@@ -3,9 +3,10 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate /vga_ctrl_tb/clk
 add wave -noupdate /vga_ctrl_tb/rst_n
 add wave -noupdate -radix hexadecimal /vga_ctrl_tb/img_i
-add wave -noupdate /vga_ctrl_tb/vga_ctrl_inst/img_buf_inst/wr_adr
 add wave -noupdate /vga_ctrl_tb/valid_i
+add wave -noupdate /vga_ctrl_tb/vga_ctrl_inst/img_buf_inst/wr_mem_adr
 add wave -noupdate /vga_ctrl_tb/ready_o
+add wave -noupdate /vga_ctrl_tb/vga_ctrl_inst/img_buf_inst/ram_block
 add wave -noupdate /vga_ctrl_tb/write_start
 add wave -noupdate /vga_ctrl_tb/write_finished
 add wave -noupdate -divider -height 34 {img address gen}
@@ -14,7 +15,9 @@ add wave -noupdate -radix unsigned /vga_ctrl_tb/vga_ctrl_inst/vga_address_gen_in
 add wave -noupdate -radix unsigned /vga_ctrl_tb/vga_ctrl_inst/vga_address_gen_inst/x
 add wave -noupdate -radix unsigned /vga_ctrl_tb/vga_ctrl_inst/vga_address_gen_inst/y
 add wave -noupdate /vga_ctrl_tb/vga_ctrl_inst/vga_address_gen_inst/drawable
+add wave -noupdate /vga_ctrl_tb/vga_ctrl_inst/img_buf_inst/re_i
 add wave -noupdate -radix unsigned /vga_ctrl_tb/vga_ctrl_inst/img_buf_inst/rd_adr_i
+add wave -noupdate -radix unsigned /vga_ctrl_tb/vga_ctrl_inst/img_buf_inst/mem_data_o
 add wave -noupdate -radix unsigned /vga_ctrl_tb/vga_ctrl_inst/img_buf_inst/data_o
 add wave -noupdate -divider -height 34 VGA
 add wave -noupdate -color {Dark Orchid} -radix hexadecimal /vga_ctrl_tb/vga_r_o
@@ -23,7 +26,7 @@ add wave -noupdate -color {Dark Orchid} -radix hexadecimal /vga_ctrl_tb/vga_b_o
 add wave -noupdate /vga_ctrl_tb/vga_hsync_o
 add wave -noupdate /vga_ctrl_tb/vga_vsync_o
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {49000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {8804925 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 339
 configure wave -valuecolwidth 40
@@ -39,4 +42,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {38141 ps}
+WaveRestoreZoom {8793534 ps} {8829086 ps}
