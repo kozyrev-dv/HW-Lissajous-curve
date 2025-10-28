@@ -47,7 +47,7 @@ begin
         end if;
     end process init;
 
-    img_i <= (others => '1');
+    img_i <= std_logic_vector(cnt(3 downto 0) + to_unsigned(to_integer(cnt(3 downto 0)) * DISPLAY_PXL_H, img_i'length));
 
     vga_ctrl_inst : entity work.vga_ctrl
         generic map(
@@ -56,12 +56,12 @@ begin
             DISPLAY_PXL_H  => DISPLAY_PXL_H,
             IMG_PXL_W => IMG_PXL_W,
             IMG_PXL_H => IMG_PXL_H,
-            FRONT_PORCH_W  => 316, -- sum = 950
-            SYNC_PULSE_W   => 317,
-            BACK_PORCH_W   => 316,
-            FRONT_PORCH_H  => 14, -- sum = 44
-            SYNC_PULSE_H   => 15,
-            BACK_PORCH_H   => 14,
+            FRONT_PORCH_W  => 95, -- sum = 950
+            SYNC_PULSE_W   => 570,
+            BACK_PORCH_W   => 285,
+            FRONT_PORCH_H  => 10, -- sum = 44
+            SYNC_PULSE_H   => 2,
+            BACK_PORCH_H   => 32,
             DISPLAY_FPS_HZ    => 60
         )
         port map(
