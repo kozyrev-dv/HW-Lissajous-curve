@@ -19,15 +19,19 @@ architecture RTL of vga_ctrl_tb is
     
     signal clk : std_logic := '0';
     signal rst_n : std_logic := '1';
+
     signal img_i : std_logic_vector(3 downto 0);
     signal valid_i : std_logic := '0';
-
     signal ready_o : std_logic;
+
     signal vga_r_o : std_logic_vector(3 downto 0);
     signal vga_g_o : std_logic_vector(3 downto 0);
     signal vga_b_o : std_logic_vector(3 downto 0);
     signal vga_hsync_o : std_logic;
     signal vga_vsync_o : std_logic;
+
+    signal write_start : boolean := FALSE;
+    signal write_finished : boolean := TRUE;
 begin
 
     vga_ctrl_inst : entity work.vga_ctrl
@@ -43,6 +47,7 @@ begin
             img_i       => img_i,
             valid_i     => valid_i,
             ready_o     => ready_o,
+
             vga_r_o     => vga_r_o,
             vga_g_o     => vga_g_o,
             vga_b_o     => vga_b_o,
@@ -54,23 +59,59 @@ begin
 
     stimuli : process is
     begin
-        wait until rising_edge(clk);
-        valid_i <= '0';
         rst_n <= '1';
+        wait until rising_edge(clk);
         wait for CLK_SIM_PERIOD * 700;
+
         rst_n <= '0';
         wait for CLK_SIM_PERIOD * 2;
         rst_n <= '1';
+        
         wait for CLK_SIM_PERIOD * 700;
-        for i in 0 to DISPLAY_PXL_SIDE * DISPLAY_PXL_SIDE - 1 loop
-            img_i <= std_logic_vector(to_unsigned(i + 1, img_i'length));
-            valid_i <= '1';
-            wait until rising_edge(clk);
+        
+        write_start <= TRUE;
+        wait until write_finished;
+        write_start <= FALSE;
+
+        wait for CLK_SIM_PERIOD * 700;
+
+        rst_n <= '0';
+        wait for CLK_SIM_PERIOD * 2;
+        rst_n <= '1';
+        
+        write_start <= TRUE;
+        wait until write_finished;
+        write_start <= FALSE;
+
+        for i in 0 to DISPLAY_PXL_SIDE - 1 loop
+            wait until rising_edge(vga_vsync_o);
+            report "VGA_Vsync counted = " & integer'image(i) severity note;
+            
         end loop;
-        valid_i <= '0';
-        wait for CLK_SIM_PERIOD * 700;
+        
+        wait for CLK_SIM_PERIOD * 100;
+
         stop;
     end process stimuli;
     
+    write_img : process is
+    begin
+        while TRUE loop
+            wait until write_start;
+            write_finished <= FALSE;
+            report boolean'image(write_finished) severity note;
+
+            for i in 0 to DISPLAY_PXL_SIDE * DISPLAY_PXL_SIDE - 1 loop
+                valid_i <= '1';
+                img_i <= std_logic_vector(to_unsigned((i + 1) mod 16, img_i'length));
+                wait until rising_edge(clk);
+            end loop;
+
+            valid_i <= '0';
+            write_finished <= TRUE;
+        end loop;
+    end process write_img;
+    
+
 
 end architecture RTL;

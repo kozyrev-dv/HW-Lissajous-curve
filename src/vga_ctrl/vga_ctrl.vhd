@@ -61,7 +61,8 @@ architecture RTL of vga_ctrl is
     signal img_x_adr : std_logic_vector(IMG_ADR_WIDTH - 1 downto 0):= (others => '0');
     signal img_y_adr : std_logic_vector(IMG_ADR_WIDTH - 1 downto 0):= (others => '0');
     signal pxl_is_draw : std_logic := '0';
-
+    
+    signal filled_o : std_logic;
     signal rgb : std_logic_vector(3 downto 0);
 begin
 
@@ -73,12 +74,16 @@ begin
     basics_p.print_dgb("BLANKING_PXLS length is " & integer'image(BLANKING_PXLS));
     basics_p.print_dgb("PXL_CNTR_WIDTH length is " & integer'image(PXL_CNTR_WIDTH));
     basics_p.print_dgb("IMG_ADR_WIDTH length is " & integer'image(IMG_ADR_WIDTH));
+    
+    basics_p.print_dgb("H-Frequency is " & real'image(real(CLK_FREQ_HZ) / real(DISPLAY_PXL_SIDE + BLANKING_PXLS)));
+    basics_p.print_dgb("V-Frequency is " & real'image(real(CLK_FREQ_HZ) / (real(DISPLAY_PXL_SIDE + BLANKING_PXLS)**2)));
 
     basics_p.print_dgb("h_cnt length is " & integer'image(h_cnt'length));
     basics_p.print_dgb("v_cnt length is " & integer'image(v_cnt'length));
 
     basics_p.print_dgb("img_x_adr length is " & integer'image(img_x_adr'length));
     basics_p.print_dgb("img_y_adr length is " & integer'image(img_y_adr'length));
+
 
 horizontal_cnt : entity work.overflow_counter
     generic map(
@@ -87,7 +92,7 @@ horizontal_cnt : entity work.overflow_counter
     port map(
         clk    => clk,
         rst_n  => rst_n,
-        ena    => not ready_o,
+        ena    => '1',
         cnt_o  => h_cnt,
         overflow_o => h_overflow
     );
@@ -148,7 +153,7 @@ img_buf_inst : entity work.img_buf
     port map(
         clk    => clk,
         rst_n  => rst_n,
-        filled_o    => ready_o,
+        filled_o    => filled_o,
         we_i    => valid_i,
         data_i  => img_i,
         re_i    => pxl_is_draw,
@@ -156,8 +161,9 @@ img_buf_inst : entity work.img_buf
         data_o  => rgb
     );
 
-vga_r_o <= rgb;
-vga_g_o <= rgb;
-vga_b_o <= rgb;
+    ready_o <= not filled_o;
+    vga_r_o <= rgb;
+    vga_g_o <= rgb;
+    vga_b_o <= rgb;
 
 end architecture RTL;

@@ -79,6 +79,16 @@ begin
         end if;
     end process memory;
     
-    data_o <= mem_data_o when re_i = '1' else (others => '0');
-
+    data_o_gen : process (clk) is
+    begin
+        if rising_edge(clk) then
+            if rst_n = '0' then
+                data_o <= (others => '0');
+            else
+                if (re_i = '0') then
+                    data_o <= mem_data_o;
+                end if;
+            end if;
+        end if;
+    end process data_o_gen;
 end architecture RTL;
