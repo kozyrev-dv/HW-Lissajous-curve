@@ -17,12 +17,12 @@ entity vga_ctrl_top is
 end entity vga_ctrl_top;
 
 architecture RTL of vga_ctrl_top is
-    constant CLK_FREQ_HZ: positive := 50_000_000;
+    constant CLK_FREQ_HZ: positive := 25_175_000;
     constant DISPLAY_PXL_W: positive range 2 to positive'high := 640;
     constant DISPLAY_PXL_H: positive range 2 to positive'high := 480;
     constant IMG_PXL_W: positive range 2 to positive'high := 480;
     constant IMG_PXL_H: positive range 2 to positive'high := 480;
-    constant DISPLAY_FPS_HZ: positive := 55;
+    constant DISPLAY_FPS_HZ: positive := 59;
     
     signal img_i : std_logic_vector(3 downto 0) := (others => '0');
     signal cnt : unsigned(basics_p.clog2(IMG_PXL_W * IMG_PXL_H) - 1 downto 0) := (others => '0');
@@ -56,13 +56,13 @@ begin
             DISPLAY_PXL_H  => DISPLAY_PXL_H,
             IMG_PXL_W => IMG_PXL_W,
             IMG_PXL_H => IMG_PXL_H,
-            FRONT_PORCH_W  => 95, -- sum = 950
-            SYNC_PULSE_W   => 570,
-            BACK_PORCH_W   => 285,
+            FRONT_PORCH_W  => 16, -- sum = 950
+            SYNC_PULSE_W   => 96,
+            BACK_PORCH_W   => 48,
             FRONT_PORCH_H  => 10, -- sum = 44
             SYNC_PULSE_H   => 2,
-            BACK_PORCH_H   => 32,
-            DISPLAY_FPS_HZ    => 60
+            BACK_PORCH_H   => 33,
+            DISPLAY_FPS_HZ    => DISPLAY_FPS_HZ
         )
         port map(
             clk         => clk,
