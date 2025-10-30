@@ -24,11 +24,10 @@ reg  [17:0] r_adr_y = 0                            ;
 reg  [17:0] w_adr_x = 0                            ;
 reg  [17:0] w_adr_y = 0                            ;
 
-
  
 // ЗАПОЛНЕНИЕ И СБРОС БУФФЕРА 
 always @(posedge clk_i) begin
-    
+   
     if (sclr_i) begin
         buffer [r_adr_x][r_adr_y] <= 0;
     end
@@ -48,9 +47,6 @@ always @(posedge clk_i) begin
 end
 
 always @(posedge clk_i) begin
-	
-	
-	
 	if ( (r_adr_x == (RESOLUTION-1) ) && (r_adr_y == (RESOLUTION-1) ) ) begin // если адрес по Х и У равны последнему пикселю по горизонтали и вертикали, то
       done_o <= 1'b1;
    end
@@ -59,7 +55,6 @@ always @(posedge clk_i) begin
 	end
 	
 end
-
 // КОНТРОЛЛЕР АДРЕСА ЧТЕНИЯ
 always @(posedge clk_i) begin
     

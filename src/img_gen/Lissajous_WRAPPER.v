@@ -27,8 +27,6 @@ module Lissajous_WRAPPER
     output          PIN_N3 , // hsync
     output          PIN_N1   // vsync
 );
-
-
 wire 	        hsync;
 wire            vsync;
 wire    [3:0]   vga_r;

@@ -6,7 +6,7 @@ module FSM
 (
 	input		   		clk_i  		, 
 	input		   		sclr_i 		,
-	input       		done_i	   ,
+	input       		done_i	,
    input	 	   		valid  		,
 	input	      		ready_i		,
 	output     [3:0]  value_o	   ,
