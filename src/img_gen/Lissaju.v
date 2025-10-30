@@ -1,6 +1,6 @@
 module Lissaju
 #(
-parameter RESOLUTION = 8'd480,
+parameter RESOLUTION = 9'd480,
 parameter STACK_SIZE = 32'd230400
 )
 (
@@ -26,7 +26,10 @@ reg  [17:0] w_adr						        ;
 // ЗАПОЛНЕНИЕ И СБРОС БУФФЕРА 
 always @(posedge clk_i) begin
 	
-	if (r_ena_i) begin
+	if (sclr_i) begin
+		buffer [r_adr] <= 0;
+	end
+	else if (r_ena_i) begin
 		buffer [r_adr] <= 0;
 	end
 	else if (w_ena_i) begin

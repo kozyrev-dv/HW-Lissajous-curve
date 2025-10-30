@@ -1,8 +1,9 @@
 module Lissaju_top
 #(
-    parameter CNT_TO     = 32'd1436267  ,  // Считается как "( (Частота проекта/частота монитора) - STACK_SIZE)"
-    parameter RESOLUTION    =  8'd480      ,    // Передавать разрешение выводимое на экран
-    parameter STACK_SIZE = 32'd230400       // RESOLUTION в квадрате
+	parameter CNT_TO     = 32'd10000000  ,
+//    parameter CNT_TO     = 32'd602933  ,  // Считается как "( (Частота проекта/частота монитора) - STACK_SIZE)"
+    parameter RESOLUTION =  9'd256     ,  // Передавать разрешение выводимое на экран
+    parameter STACK_SIZE = 32'd65536      // RESOLUTION в квадрате
 )
 (
     input        clk_i      ,
@@ -47,10 +48,10 @@ always @(posedge clk_i) begin
 end
 
 always @(posedge clk_i) begin
-    sclr = 0;
+    sclr <= 0;
     
     if (!sclr_i || full_img_i) begin
-        sclr = 1'b1;
+        sclr <= 1'b1;
     end
     
 end
@@ -83,7 +84,7 @@ FSM_inst
     .clk_i      (clk_i          ),
     .valid      (valid          ),
     .ready_i    (ready_i        ),
-    .done_i     (done           ),
+    .done_i     (full_img_i     ),
     .value_o    (value          ),
     .w_ena_o    (w_ena          ),
     .r_ena_o    (r_ena          )
