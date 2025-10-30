@@ -16,14 +16,14 @@ architecture RTL of img_buf_tb is
     constant DISPLAY_HEIGHT : integer := 10;
     constant IMG_WIDTH : integer := 6;
     constant IMG_HEIGHT : integer := 6;
-    constant ADR_WIDTH : integer := basics_p.clog2(DISPLAY_WIDTH * DISPLAY_HEIGHT);
     
     signal clk : std_logic := '0';
     signal rst_n : std_logic := '1';
     signal filled_o : std_logic;
     signal we_i : std_logic := '0';
     signal data_i : unsigned(3 downto 0);
-    signal rd_adr_i : unsigned(ADR_WIDTH - 1 downto 0);
+    signal rd_adr_x_i : unsigned(basics_p.clog2(DISPLAY_WIDTH) - 1 downto 0);
+    signal rd_adr_y_i : unsigned(basics_p.clog2(DISPLAY_HEIGHT) - 1 downto 0);
     signal re_i : std_logic := '0';
     signal data_o : std_logic_vector(3 downto 0);
 
@@ -48,7 +48,8 @@ begin
             filled_o => filled_o,
             we_i     => we_i,
             data_i   => std_logic_vector(data_i),
-            rd_adr_i => std_logic_vector(rd_adr_i),
+            rd_adr_x_i => std_logic_vector(rd_adr_x_i),
+            rd_adr_y_i => std_logic_vector(rd_adr_y_i),
             re_i     => re_i,
             data_o   => data_o
         );
@@ -63,7 +64,8 @@ begin
             re_i <= '0' when read_loop_num = 0 else '1';
             read_loop : for j in 0 to DISPLAY_WIDTH * DISPLAY_HEIGHT - 1 loop
                 is_reading <= TRUE;
-                rd_adr_i <= to_unsigned(read_loop.j, rd_adr_i'length);
+                rd_adr_x_i <= to_unsigned(read_loop.j mod DISPLAY_WIDTH, rd_adr_x_i'length);
+                rd_adr_y_i <= to_unsigned(read_loop.j  /  DISPLAY_WIDTH, rd_adr_y_i'length);
                 wait until rising_edge(clk);
             end loop read_loop;
             is_reading <= FALSE;

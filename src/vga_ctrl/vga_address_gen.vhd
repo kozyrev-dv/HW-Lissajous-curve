@@ -27,6 +27,6 @@ begin
     drawable <= '1' when (unsigned(h_cnt) < DISPLAY_PXL_W) and (unsigned(v_cnt) < DISPLAY_PXL_H)
                 else '0';
 
-    x <= h_cnt(x'length - 1 downto 0) when drawable else (others => '0');
-    y <= v_cnt(y'length - 1 downto 0) when drawable else (others => '0');
+    x <= h_cnt(x'length - 1 downto 0) when drawable = '1' else (others => '0');
+    y <= v_cnt(y'length - 1 downto 0) when drawable = '1' else (others => '0');
 end architecture RTL;

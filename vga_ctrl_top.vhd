@@ -20,8 +20,8 @@ architecture RTL of vga_ctrl_top is
     constant CLK_FREQ_HZ: positive := 25_175_000;
     constant DISPLAY_PXL_W: positive range 2 to positive'high := 640;
     constant DISPLAY_PXL_H: positive range 2 to positive'high := 480;
-    constant IMG_PXL_W: positive range 2 to positive'high := 480;
-    constant IMG_PXL_H: positive range 2 to positive'high := 480;
+    constant IMG_PXL_W: positive range 2 to positive'high := 455;
+    constant IMG_PXL_H: positive range 2 to positive'high := 455;
     constant DISPLAY_FPS_HZ: positive := 59;
     
     signal img_i : std_logic_vector(3 downto 0) := (others => '0');
