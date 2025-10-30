@@ -1,6 +1,6 @@
 module FSM
 #(
-	parameter CNT_TO
+	parameter CNT_TO = 32'd212_559
 )
 
 (
