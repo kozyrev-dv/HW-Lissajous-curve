@@ -7,7 +7,7 @@ module counter
 	input      			ena_i  , 
 	 
 	output reg 			imp_o  ,
-	output reg [3:0]	value_o
+	output reg [3:0]	value_o = 4'hF
 );
 
 reg [31:0] cnt;
