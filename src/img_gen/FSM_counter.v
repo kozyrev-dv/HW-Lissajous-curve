@@ -38,7 +38,7 @@ always @(posedge clk_i) begin
 		end
 		else if (cnt2 == (CNT_TO >> 4) ) begin
 				cnt2    <= 0;
-				value_o <= value_o;
+				value_o <= value_o - 1'b1;
 		end
 		
 	end
