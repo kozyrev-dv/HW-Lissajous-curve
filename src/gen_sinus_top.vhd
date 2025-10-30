@@ -33,6 +33,7 @@ begin
     sinus_lookup_inst : entity work.sinus
         port map (
             clk        => clk,
+				rst             => rst,
             addr_a     => addr_a_sig,
             addr_b     => addr_b_sig,
             data_a     => data_a,

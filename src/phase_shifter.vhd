@@ -22,8 +22,16 @@ begin
 			if rst = '0' then
 			  addr_a      			<= (others => '0');
 			  addr_cnt    			<= to_unsigned(0,8);
-			elsif rising_edge(clk) then
-			  shift_reg 			<= std_logic_vector(to_unsigned(32 * to_integer( unsigned("0000" & phase_shift_val)), 8));
+			 elsif rising_edge(clk) then
+				case phase_shift_val is
+                when "0000" => shift_reg <= std_logic_vector(to_unsigned(0, 8));
+                when "0001" => shift_reg <= std_logic_vector(to_unsigned(32, 8));
+                when "0010" => shift_reg <= std_logic_vector(to_unsigned(32 * 2, 8));
+                when "0100" => shift_reg <= std_logic_vector(to_unsigned(32 * 3, 8));
+                when "1000" => shift_reg <= std_logic_vector(to_unsigned(32 * 4, 8));
+                when others => shift_reg <= (others => '0');
+				end case;
+			  -- Gen addres to sinus table
 			  addr_a    			<= std_logic_vector(addr_cnt);
 			  addr_b  				<= std_logic_vector(unsigned(shift_reg) + addr_cnt);
 			  addr_cnt  			<= addr_cnt + to_unsigned(1,8);	  
