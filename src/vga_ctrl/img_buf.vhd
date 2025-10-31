@@ -93,10 +93,10 @@ begin
                             wr_adr_y <= wr_adr_y + 1;
                             filled_o <= '0';
                         end if;
-                    elsif we_i = '0' and filled_o = '1' then
-                        wr_adr_y <= 0;
-                        filled_o <= '0';
                     end if;
+                end if;
+                if we_i = '0' and filled_o = '1' then
+                    filled_o <= '0';
                 end if;
             end if;
         end if;
@@ -116,4 +116,5 @@ begin
     end process memory;
     
     data_o <= mem_data_o when re_i = '1' and unsigned(rd_adr_x_i) < IMG_WIDTH and unsigned(rd_adr_y_i) < IMG_HEIGHT else (others => '0');
+    
 end architecture RTL;
