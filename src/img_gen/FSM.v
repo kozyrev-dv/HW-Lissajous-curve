@@ -18,6 +18,8 @@ localparam [1:0] IDLE  = 2'b00;
 localparam [1:0] READ  = 2'b01;
 localparam [1:0] WRITE = 2'b10;
 
+wire timeout;
+
 reg		  [1:0] state = 0;
 reg		  [1:0] NextState = 0;
 
@@ -29,6 +31,7 @@ FSM_WRITE_COUNTER
 (
 	.clk_i   (clk_i   ),
 	.ena_i   (state[1]),
+	.draw_pix_i (w_ena_o),
 	.value_o (value_o ),
 	.imp_o   (timeout )
 );

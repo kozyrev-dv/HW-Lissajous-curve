@@ -23,6 +23,10 @@ module Lissaju_top
 
 );
 
+wire w_ena;
+wire r_ena;
+wire done;
+
 reg        sclr ;
 reg        valid;
 reg [8:0]  data1;
@@ -82,6 +86,7 @@ FSM
 FSM_inst
 (
     .clk_i      (clk_i          ),
+    .sclr_i     (sclr           ),
     .valid      (valid          ),
     .ready_i    (ready_i        ),
     .done_i     (done           ),

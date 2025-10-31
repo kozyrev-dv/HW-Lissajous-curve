@@ -1,6 +1,6 @@
 module Lissajous_WRAPPER
 #(
-	parameter RESOLUTION = 9'd429,
+	parameter RESOLUTION = 9'd10,
 	parameter CNT_TO     = 32'd212_559
 )
 (
@@ -37,6 +37,8 @@ wire    [3:0]   data_img;
 wire    [8:0]   data_gen1;
 wire    [8:0]   data_gen2;
 wire            valid_gen;
+wire ready;
+wire valid_img;
 
 assign SW_value = {PIN_C10, PIN_C11, PIN_D12, PIN_C12};
 

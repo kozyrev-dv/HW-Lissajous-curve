@@ -116,4 +116,5 @@ begin
     end process memory;
     
     data_o <= mem_data_o when re_i = '1' and unsigned(rd_adr_x_i) < IMG_WIDTH and unsigned(rd_adr_y_i) < IMG_HEIGHT else (others => '0');
+    
 end architecture RTL;
