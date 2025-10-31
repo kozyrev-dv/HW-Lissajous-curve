@@ -31,7 +31,7 @@ reg [8:0]  data2;
 wire [3:0] value;
 
 always @(posedge clk_i) begin
-    if (!sclr_i) begin
+    if (sclr) begin
         valid <= 0;
     end
     else if (sel_i) begin
@@ -42,7 +42,7 @@ always @(posedge clk_i) begin
     else begin
         valid <= validADC_i;
         data1 <= dataADC1_i;
-        data2 <= dataADC2_i;
+      data2 <= dataADC2_i;
     end
     
 end
@@ -84,7 +84,7 @@ FSM_inst
     .clk_i      (clk_i          ),
     .valid      (valid          ),
     .ready_i    (ready_i        ),
-    .done_i     (done           ),
+    .done_i     (full_img_i     ),
     .value_o    (value          ),
     .w_ena_o    (w_ena          ),
     .r_ena_o    (r_ena          )

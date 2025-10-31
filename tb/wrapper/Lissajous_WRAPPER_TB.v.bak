@@ -1,0 +1,7 @@
+module Lissajous_WRAPPER_TB
+#(
+	parameter RESOLUTION = 10
+)
+();
+
+reg 

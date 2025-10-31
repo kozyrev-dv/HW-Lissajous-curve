@@ -1,13 +1,13 @@
 module counter
 #(
-	parameter CNT_TO
+	parameter CNT_TO = 32'd212_559
 )
 (
 	input      			clk_i  ,  
 	input      			ena_i  , 
 	 
 	output reg 			imp_o  ,
-	output reg [3:0]	value_o
+	output reg [3:0]	value_o = 4'hF
 );
 
 reg [31:0] cnt;
@@ -27,6 +27,8 @@ always @(posedge clk_i) begin
 	end
 
 end
+
+
 
 always @(posedge clk_i) begin
 	
