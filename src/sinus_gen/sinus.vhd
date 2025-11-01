@@ -278,18 +278,18 @@ architecture arch of sinus is
     );
 
 begin
-    read_process: process(clk)
+    read_process: process(clk,rst)
     begin
 			
 			if rising_edge(clk) then
 				if rst = '0' then
 					data_valid <= '0';
-                    data_a <= (others => '0');
-                    data_b <= (others => '0');
 				elsif enable = '1' then
 					data_a <= '0' & std_logic_vector(sine_rom(to_integer(unsigned(addr_a))));
 					data_b <= '0' & std_logic_vector(sine_rom(to_integer(unsigned(addr_b))));
 					data_valid <= '1';
+				else
+					data_valid <= '0';
 				end if;
 			end if;
     end process;
