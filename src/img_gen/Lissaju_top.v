@@ -65,7 +65,7 @@ always @(posedge clk_i) begin
         end else begin
             data1_T_start <= data1_T_start;
             data2_T_start <= data2_T_start;
-            if (data1_T_start == dataGEN1_i && data2_T_start == dataGEN2_i) begin
+            if (data1_T_start == dataGEN1_i && data2_T_start == dataGEN2_i && validGEN_i) begin
                 is_period_written <= 1'b1;
             end
         end
@@ -80,7 +80,7 @@ always @(posedge clk_i) begin
         end else begin
             data1_T_start <= data1_T_start;
             data2_T_start <= data2_T_start;
-            if (data1_T_start == dataADC1_i && data2_T_start == dataADC2_i) begin
+            if (data1_T_start == dataADC1_i && data2_T_start == dataADC2_i && validADC_i) begin
                 is_period_written <= 1'b1;
             end
         end
