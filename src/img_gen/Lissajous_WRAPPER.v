@@ -1,7 +1,9 @@
 module Lissajous_WRAPPER
 #(
-	parameter RESOLUTION = 9'd10,
-	parameter CNT_TO     = 32'd212_559
+	parameter RESOLUTION    = 9'd10,
+	parameter CNT_TO        = 32'd212_559,
+    parameter CLK_FREQ_HZ   = 25_175_000,
+    parameter FPS_HZ        = 32'd59
 )
 (
     input           PIN_P11, //MAX10_CLK1_50
@@ -85,6 +87,10 @@ Lissaju_top_inst
 );
 
 gen_sinus_top
+#(
+    .CLK_FREQ_HZ    (CLK_FREQ_HZ ),
+    .FPS            (FPS_HZ         )
+)
 gen_sinus_top_inst
 (
     .clk            (PIN_P11    ),
@@ -97,7 +103,7 @@ gen_sinus_top_inst
 
 vga_ctrl
 #(
-    .CLK_FREQ_HZ    (25_175_000),    
+    .CLK_FREQ_HZ    (CLK_FREQ_HZ),    
     .DISPLAY_PXL_W  (640),
     .DISPLAY_PXL_H  (480),
     .IMG_PXL_W      (RESOLUTION),
@@ -108,7 +114,7 @@ vga_ctrl
     .FRONT_PORCH_H  (10),
     .SYNC_PULSE_H   (2),
     .BACK_PORCH_H   (33),
-    .DISPLAY_FPS_HZ (59)
+    .DISPLAY_FPS_HZ (FPS_HZ)
 )
 vga_ctrl_inst
 (

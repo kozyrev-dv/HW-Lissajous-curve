@@ -444,7 +444,7 @@ refer to the applicable agreement for further details.
 (symbol
 	(rect 592 112 776 384)
 	(text "Lissajous_WRAPPER" (rect 5 0 112 12)(font "Arial" ))
-	(text "inst3" (rect 8 256 30 273)(font "Intel Clear" ))
+	(text "inst" (rect 8 256 25 268)(font "Arial" ))
 	(port
 		(pt 0 32)
 		(input)
@@ -609,10 +609,20 @@ refer to the applicable agreement for further details.
 		"212559"
 		""
 		(type "PARAMETER_UNSIGNED_DEC")	)
+	(parameter
+		"CLK_FREQ_HZ"
+		"25175000"
+		""
+		(type "PARAMETER_UNSIGNED_DEC")	)
+	(parameter
+		"FPS_HZ"
+		"59"
+		""
+		(type "PARAMETER_UNSIGNED_DEC")	)
 	(drawing
 		(rectangle (rect 16 16 168 256))
 	)
-	(annotation_block (parameter)(rect 776 48 987 105))
+	(annotation_block (parameter)(rect 776 16 1007 111))
 )
 (connector
 	(pt 208 -24)

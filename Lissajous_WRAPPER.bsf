@@ -187,6 +187,16 @@ refer to the applicable agreement for further details.
 		"00000000000000110011111001001111"
 		""
 		(type "PARAMETER_UNSIGNED_BIN")	)
+	(parameter
+		"CLK_FREQ_HZ"
+		"25175000"
+		""
+		(type "PARAMETER_SIGNED_DEC")	)
+	(parameter
+		"FPS_HZ"
+		"00000000000000000000000000111011"
+		""
+		(type "PARAMETER_UNSIGNED_BIN")	)
 	(drawing
 		(rectangle (rect 16 16 168 256)(line_width 1))
 	)
