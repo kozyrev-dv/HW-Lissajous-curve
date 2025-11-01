@@ -51,7 +51,7 @@ begin
             data_valid => data_valid
         );
 	
-		process(clk,rst)
+		process(clk)
 		begin
 			
 			-- ClOCK DEVIDER

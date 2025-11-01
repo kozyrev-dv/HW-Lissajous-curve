@@ -20,7 +20,7 @@ architecture rtl of phase_shifter is
 begin
 	
 	
-   process(clk,rst)
+   process(clk)
 		begin
 			
 			-- ClOCK DEVIDER
