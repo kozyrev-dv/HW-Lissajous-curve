@@ -139,6 +139,23 @@ refer to the applicable agreement for further details.
 	(annotation_block (location)(rect 368 248 424 272))
 )
 (pin
+	(input)
+	(rect 424 248 592 264)
+	(text "INPUT" (rect 125 0 153 10)(font "Arial" (font_size 6)))
+	(text "KEY1" (rect 5 0 33 12)(font "Arial" ))
+	(pt 168 8)
+	(drawing
+		(line (pt 84 12)(pt 109 12))
+		(line (pt 84 4)(pt 109 4))
+		(line (pt 113 8)(pt 168 8))
+		(line (pt 84 12)(pt 84 4))
+		(line (pt 109 4)(pt 113 8))
+		(line (pt 109 12)(pt 113 8))
+	)
+	(text "VCC" (rect 128 7 148 17)(font "Arial" (font_size 6)))
+	(annotation_block (location)(rect 368 264 424 288))
+)
+(pin
 	(output)
 	(rect 776 136 952 152)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
@@ -427,7 +444,7 @@ refer to the applicable agreement for further details.
 (symbol
 	(rect 592 112 776 384)
 	(text "Lissajous_WRAPPER" (rect 5 0 112 12)(font "Arial" ))
-	(text "inst" (rect 8 256 25 268)(font "Arial" ))
+	(text "inst3" (rect 8 256 30 273)(font "Intel Clear" ))
 	(port
 		(pt 0 32)
 		(input)
@@ -476,6 +493,13 @@ refer to the applicable agreement for further details.
 		(text "KEY0" (rect 0 0 28 12)(font "Arial" ))
 		(text "KEY0" (rect 21 123 49 135)(font "Arial" ))
 		(line (pt 0 128)(pt 16 128))
+	)
+	(port
+		(pt 0 144)
+		(input)
+		(text "KEY1" (rect 0 0 28 12)(font "Arial" ))
+		(text "KEY1" (rect 21 139 49 151)(font "Arial" ))
+		(line (pt 0 144)(pt 16 144))
 	)
 	(port
 		(pt 184 32)
@@ -577,7 +601,7 @@ refer to the applicable agreement for further details.
 	)
 	(parameter
 		"RESOLUTION"
-		"10"
+		"429"
 		""
 		(type "PARAMETER_UNSIGNED_DEC")	)
 	(parameter

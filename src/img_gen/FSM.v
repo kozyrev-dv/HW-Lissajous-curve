@@ -6,10 +6,11 @@ module FSM
 (
 	input		   		clk_i  		, 
 	input		   		sclr_i 		,
-	input       		done_i	,
-   input	 	   		valid  		,
+	input       		done_i		,
+    input	 	   		valid  		,
 	input	      		ready_i		,
-	output     [3:0]  value_o	   ,
+	output		[1:0]	next_state_o		,
+	output     	[3:0]  value_o	   	,
    output reg  		w_ena_o		,
    output reg  		r_ena_o
 );
@@ -22,6 +23,8 @@ wire timeout;
 
 reg		  [1:0] state = 0;
 reg		  [1:0] NextState = 0;
+
+assign next_state_o = NextState;
 
 counter
 #(

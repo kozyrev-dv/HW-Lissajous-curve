@@ -11,6 +11,7 @@ module Lissajous_WRAPPER
     input           PIN_C12, //SW3
     input           PIN_A12, //SW4
     input           KEY0   , //aclr button
+    input           KEY1   , //pause button
 
     output          PIN_AA1, // r
     output          PIN_V1 , // r
@@ -114,7 +115,7 @@ vga_ctrl_inst
     .clk         (PIN_P11), 
     .rst_n       (KEY0),     
     .img_i       (data_img),     
-    .valid_i     (valid_img),     
+    .valid_i     (valid_img && KEY1),     
     .ready_o     (ready),         
     .vga_r_o     (vga_r),     
     .vga_g_o     (vga_g),     
