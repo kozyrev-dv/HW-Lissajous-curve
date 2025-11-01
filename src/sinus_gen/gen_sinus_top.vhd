@@ -56,18 +56,20 @@ begin
 			
 			-- ClOCK DEVIDER
 			
-			--RESET
-			if rst = '0' then
-			  clk_devider <= 0;
+			
 			-- CLOCK FRONT EDGE
-			elsif rising_edge(clk) then
+			if rising_edge(clk) then
+					--RESET
+					if rst = '0' then
+					  clk_devider  <= 0;
+					  enable 		<= '0';
 					-- ClOCK DEVIDER
-					if clk_devider = strob_Hz - 1  then
-						enable <= '1';
-						clk_devider <= 0;
-						else
-						clk_devider <= clk_devider + 1;
-						enable <= '0';
+					elsif clk_devider = strob_Hz - 1  then
+							enable <= '1';
+							clk_devider <= 0;
+					else
+							clk_devider <= clk_devider + 1;
+							enable <= '0';
 					end if;
 			end if;
 			

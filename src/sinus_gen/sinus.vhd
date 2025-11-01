@@ -284,8 +284,7 @@ begin
 			if rising_edge(clk) then
 				if rst = '0' then
 					data_valid <= '0';
-				end if;
-				if enable = '1' then
+				elsif enable = '1' then
 					data_a <= '0' & std_logic_vector(sine_rom(to_integer(unsigned(addr_a))));
 					data_b <= '0' & std_logic_vector(sine_rom(to_integer(unsigned(addr_b))));
 					data_valid <= '1';
