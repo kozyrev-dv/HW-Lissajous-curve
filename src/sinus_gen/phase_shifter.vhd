@@ -4,8 +4,8 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity phase_shifter is
 	 generic (
-			CLK_FREQ_HZ	: integer := 50000000;
-			FPS    		: integer := 25175000
+			CLK_FREQ_HZ	: integer := 50_000_000;
+			FPS    		: integer := 39_062
     );
 	 
     port (
@@ -19,11 +19,11 @@ entity phase_shifter is
 end entity;
 
 architecture rtl of phase_shifter is
-	signal addr_cnt  			: unsigned 			(7 downto 0) := (others => '0');
-	signal shift_reg 			: std_logic_vector(7 downto 0) := (others => '0');
-	signal clk_devider  		: integer range  0 to CLK_FREQ_HZ - 1 := 0;
-	signal strob_Hz  		   : integer range  0 to CLK_FREQ_HZ := CLK_FREQ_HZ / (256 * FPS);
-	signal enable     		: std_logic := '0';
+	signal 	addr_cnt  			: unsigned 			(7 downto 0) := (others => '0');
+	signal 	shift_reg 			: std_logic_vector(7 downto 0) := (others => '0');
+	signal 	clk_devider  		: integer range  0 to CLK_FREQ_HZ - 1 := 0;
+	constant strob_Hz  		   : integer range  0 to CLK_FREQ_HZ - 1  := CLK_FREQ_HZ / (256 * FPS);
+	signal 	enable     		: std_logic := '0';
 begin
 	
 	
@@ -55,18 +55,21 @@ begin
 					
 			
 					-- ClOCK DEVIDER
-					if clk_devider = strob_Hz  then
+					if clk_devider = strob_Hz - 1  then
 						enable <= '1';
+						clk_devider <= 0;
+						else
+						clk_devider <= clk_devider + 1;
+						enable <= '0';
 					end if;
 					
-					clk_devider <= clk_devider + 1;
+					
 					
 					-- GENERATE ADDRESS FOR SINUS TABLE
 					if enable = '1' then
 						  addr_a    			<= std_logic_vector(addr_cnt);
 						  addr_b  				<= std_logic_vector(unsigned(shift_reg) + addr_cnt);
 						  addr_cnt  			<= addr_cnt + to_unsigned(1,8);	  
-						  enable <= '0';
 					end if;
 			end if;
 			
