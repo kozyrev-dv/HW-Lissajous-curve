@@ -10,9 +10,11 @@ entity sinus is
         data_a 		: out std_logic_vector(8 downto 0);
         data_b 		: out std_logic_vector(8 downto 0);
 		  data_valid 	: out std_logic;
+		  enable     	: in  std_logic;
 		  rst     		: in  std_logic
     );
 end sinus;
+
 
 architecture arch of sinus is
     type rom_type is array (0 to 255) of unsigned(7 downto 0);
@@ -283,9 +285,11 @@ begin
 				if rst = '0' then
 					data_valid <= '0';
 				end if;
-				data_a <= '0' & std_logic_vector(sine_rom(to_integer(unsigned(addr_a))));
-				data_b <= '0' & std_logic_vector(sine_rom(to_integer(unsigned(addr_b))));
-				data_valid <= '1';
+				if enable = '1' then
+					data_a <= '0' & std_logic_vector(sine_rom(to_integer(unsigned(addr_a))));
+					data_b <= '0' & std_logic_vector(sine_rom(to_integer(unsigned(addr_b))));
+					data_valid <= '1';
+				end if;
 			end if;
     end process;
 end arch;

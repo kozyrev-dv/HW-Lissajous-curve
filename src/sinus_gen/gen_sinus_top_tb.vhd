@@ -32,7 +32,8 @@ begin
         );
 	
 		-- clock 10 ns
-		  clk <= not clk after 10ns;
+		  clk <= not clk after 10
+		  ns;
 		  
    --PROCESSSS
 			stim_proc : process
