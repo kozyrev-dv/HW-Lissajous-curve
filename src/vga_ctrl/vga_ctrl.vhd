@@ -71,8 +71,8 @@ architecture RTL of vga_ctrl is
     signal h_overflow : std_logic := '0';
     signal v_cnt : std_logic_vector(PXL_Y_CNTR_WIDTH - 1 downto 0):= (others => '0');
     
-    signal img_x_adr : std_logic_vector(IMG_ADR_X_WIDTH - 1 downto 0):= (others => '0');
-    signal img_y_adr : std_logic_vector(IMG_ADR_Y_WIDTH - 1 downto 0):= (others => '0');
+    signal disp_x_adr : std_logic_vector(IMG_ADR_X_WIDTH - 1 downto 0):= (others => '0');
+    signal disp_y_adr : std_logic_vector(IMG_ADR_Y_WIDTH - 1 downto 0):= (others => '0');
     signal pxl_is_draw : std_logic := '0';
     
     signal filled_o : std_logic;
@@ -97,8 +97,8 @@ begin
     basics_p.print_dgb("h_cnt length is " & integer'image(h_cnt'length));
     basics_p.print_dgb("v_cnt length is " & integer'image(v_cnt'length));
 
-    basics_p.print_dgb("img_x_adr length is " & integer'image(img_x_adr'length));
-    basics_p.print_dgb("img_y_adr length is " & integer'image(img_y_adr'length));
+    basics_p.print_dgb("disp_x_adr length is " & integer'image(disp_x_adr'length));
+    basics_p.print_dgb("disp_y_adr length is " & integer'image(disp_y_adr'length));
 
 
 horizontal_cnt : entity work.overflow_counter
@@ -158,8 +158,8 @@ vga_address_gen_inst : entity work.vga_address_gen
     port map(
         h_cnt    => h_cnt,
         v_cnt    => v_cnt,
-        x        => img_x_adr,
-        y        => img_y_adr,
+        x        => disp_x_adr,
+        y        => disp_y_adr,
         drawable => pxl_is_draw
     );
 
@@ -177,7 +177,8 @@ img_buf_inst : entity work.img_buf
         we_i    => valid_i,
         data_i  => img_i,
         re_i    => pxl_is_draw,
-        rd_adr_i    => std_logic_vector(to_unsigned(to_integer(unsigned(img_x_adr)) + to_integer(unsigned(img_y_adr)) * DISPLAY_PXL_W, basics_p.clog2(DISPLAY_PXL_W * DISPLAY_PXL_W))),
+        rd_adr_x_i => disp_x_adr,
+        rd_adr_y_i => disp_y_adr,
         data_o  => rgb
     );
 

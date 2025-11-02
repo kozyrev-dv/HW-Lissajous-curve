@@ -85,7 +85,6 @@ always @(posedge clk_i) begin
             end
     endcase
     
-    default: begin
         PIN_C10 = 0;
         PIN_C11 = 0;
         PIN_D12 = 0;
