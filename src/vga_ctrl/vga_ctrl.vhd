@@ -57,13 +57,100 @@ end entity vga_ctrl;
 
 architecture RTL of vga_ctrl is
     
-    constant BLANKING_PXLS_W : integer := FRONT_PORCH_W + SYNC_PULSE_W + BACK_PORCH_W;
-    constant BLANKING_PXLS_H : integer := FRONT_PORCH_H + SYNC_PULSE_H + BACK_PORCH_H;
+function calc_blanking_coef(clk_freq, desired_fps, img_w, img_h : integer) return real is
+    constant D_b2 : real := real(22 * img_w + 80 * img_h)**2;
+    constant D_4ac : real := 4.0 * 176.0 * (real(img_w * img_h) - real(clk_freq) / real(desired_fps));
+    constant D : real := D_b2 - D_4ac;
+begin
+    assert D >= 0.0 report  "Invalid Windth x Height, clk_freq and desired FPS value combination. " & 
+                            "Unable to calculate blanking pixels number" severity error;
     
-    constant MAX_FPS : integer := CLK_FREQ_HZ / ((DISPLAY_PXL_W + BLANKING_PXLS_W) * (DISPLAY_PXL_H + BLANKING_PXLS_H));
+    return (real(-22 * img_w - 80 * img_h) + sqrt(D)) / (2.0 * 176.0);
+end function calc_blanking_coef;
 
-    constant PXL_X_CNTR_WIDTH : integer := basics_p.clog2(DISPLAY_PXL_W + BLANKING_PXLS_W);
-    constant PXL_Y_CNTR_WIDTH : integer := basics_p.clog2(DISPLAY_PXL_H + BLANKING_PXLS_H);
+type t_blanking_pixels is record
+    front_porch : integer;
+    sync_pulse : integer;
+    back_porch : integer;
+end record t_blanking_pixels;
+
+function calc_blanking_w(clk_freq, desired_fps, img_w, img_h, min_front_porch, min_sync_pulse, min_back_porch : integer) return t_blanking_pixels is
+    constant y1: real := calc_blanking_coef(clk_freq, desired_fps, img_w, img_h);
+    constant x : real := 8.0 * y1;
+    constant blanking_pixels : t_blanking_pixels := (
+        front_porch => integer(x),
+        sync_pulse => integer(6.0 * x),
+        back_porch => integer(3.0 * x)
+    );
+begin
+    basics_p.print_dgb(integer'image(clk_freq));
+    basics_p.print_dgb(integer'image(desired_fps));
+    basics_p.print_dgb(integer'image(img_w));
+    basics_p.print_dgb(integer'image(img_h));
+    assert blanking_pixels.front_porch >= min_front_porch
+        report "unable to set up FRONT_PORCH_W (" & integer'image(blanking_pixels.front_porch) &") lower than the required minimum ("&integer'image(min_front_porch)&")"
+        severity error;
+    
+    assert blanking_pixels.sync_pulse >= min_sync_pulse
+        report "unable to set up SYNC_PULSE_W (" & integer'image(blanking_pixels.sync_pulse) &") lower than the required minimum ("&integer'image(min_sync_pulse)&")"
+        severity error;
+
+    assert blanking_pixels.back_porch >= min_back_porch
+        report "unable to set up BACK_PORCH_W (" & integer'image(blanking_pixels.back_porch) &") lower than the required minimum ("&integer'image(min_back_porch)&")"
+        severity error;
+    
+    return blanking_pixels;
+end function calc_blanking_w;
+
+function calc_blanking_h(clk_freq, desired_fps, img_w, img_h, min_front_porch, min_sync_pulse, min_back_porch : integer) return t_blanking_pixels is
+    constant y1: real := calc_blanking_coef(clk_freq, desired_fps, img_w, img_h);
+    constant blanking_pixels : t_blanking_pixels := (
+        front_porch => integer(5.0 * y1),
+        sync_pulse => integer(1.0 * y1),
+        back_porch => integer(16.0 * y1)
+    );
+begin
+    assert blanking_pixels.front_porch >= min_front_porch
+        report "unable to set up FRONT_PORCH_H (" & integer'image(blanking_pixels.front_porch) &") lower than the required minimum ("&integer'image(min_front_porch)&")"
+        severity error;
+    
+    assert blanking_pixels.sync_pulse >= min_sync_pulse
+        report "unable to set up SYNC_PULSE_H (" & integer'image(blanking_pixels.sync_pulse) &") lower than the required minimum ("&integer'image(min_sync_pulse)&")"
+        severity error;
+
+    assert blanking_pixels.back_porch >= min_back_porch
+        report "unable to set up BACK_PORCH_H (" & integer'image(blanking_pixels.back_porch) &") lower than the required minimum ("&integer'image(min_back_porch)&")"
+        severity error;
+    
+    return blanking_pixels;
+end function calc_blanking_h;
+
+    constant BLANKING_PXLS_W : t_blanking_pixels := calc_blanking_w(
+        CLK_FREQ_HZ,
+        DISPLAY_FPS_HZ,
+        DISPLAY_PXL_W,
+        DISPLAY_PXL_H,
+        FRONT_PORCH_W,
+        SYNC_PULSE_W,
+        BACK_PORCH_W
+    );
+    constant BLANKING_PXLS_SUM_W : integer := BLANKING_PXLS_W.front_porch + BLANKING_PXLS_W.sync_pulse + BLANKING_PXLS_W.back_porch;
+    
+    constant BLANKING_PXLS_H : t_blanking_pixels := calc_blanking_h(
+        CLK_FREQ_HZ,
+        DISPLAY_FPS_HZ,
+        DISPLAY_PXL_W,
+        DISPLAY_PXL_H,
+        FRONT_PORCH_H,
+        SYNC_PULSE_H,
+        BACK_PORCH_H
+    );
+    constant BLANKING_PXLS_SUM_H : integer := BLANKING_PXLS_H.front_porch + BLANKING_PXLS_H.sync_pulse + BLANKING_PXLS_H.back_porch;
+    
+    constant MAX_FPS : integer := CLK_FREQ_HZ / ((DISPLAY_PXL_W + FRONT_PORCH_W + SYNC_PULSE_W + BACK_PORCH_W) * (DISPLAY_PXL_H + FRONT_PORCH_H + SYNC_PULSE_H + BACK_PORCH_H));
+
+    constant PXL_X_CNTR_WIDTH : integer := basics_p.clog2(DISPLAY_PXL_W + BLANKING_PXLS_SUM_W);
+    constant PXL_Y_CNTR_WIDTH : integer := basics_p.clog2(DISPLAY_PXL_H + BLANKING_PXLS_SUM_H);
     constant IMG_ADR_X_WIDTH : integer := basics_p.clog2(DISPLAY_PXL_W);
     constant IMG_ADR_Y_WIDTH : integer := basics_p.clog2(DISPLAY_PXL_H);
     
@@ -80,30 +167,38 @@ architecture RTL of vga_ctrl is
 begin
 
     assert DISPLAY_FPS_HZ <= MAX_FPS
-        report "Unable to ensure the desired display FPS. Please choose value <= " & integer'image(MAX_FPS)
+        report "Unable to ensure the desired display FPS (" & integer'image(DISPLAY_FPS_HZ) & "). Please choose value <= " & integer'image(MAX_FPS)
         severity error;
     
-    basics_p.print_dgb("MAX_FPS length is " & integer'image(MAX_FPS));
-    basics_p.print_dgb("BLANKING_PXLS_W length is " & integer'image(BLANKING_PXLS_W));
-    basics_p.print_dgb("BLANKING_PXLS_H length is " & integer'image(BLANKING_PXLS_H));
-    basics_p.print_dgb("PXL_X_CNTR_WIDTH length is " & integer'image(PXL_X_CNTR_WIDTH));
-    basics_p.print_dgb("PXL_Y_CNTR_WIDTH length is " & integer'image(PXL_Y_CNTR_WIDTH));
-    basics_p.print_dgb("IMG_ADR_X_WIDTH length is " & integer'image(IMG_ADR_X_WIDTH));
-    basics_p.print_dgb("IMG_ADR_Y_WIDTH length is " & integer'image(IMG_ADR_Y_WIDTH));
-    
-    basics_p.print_dgb("H-Frequency is " & real'image(real(CLK_FREQ_HZ) / real(DISPLAY_PXL_W + BLANKING_PXLS_W)));
-    basics_p.print_dgb("V-Frequency is " & real'image(real(CLK_FREQ_HZ) / (real((DISPLAY_PXL_W + BLANKING_PXLS_W)*(DISPLAY_PXL_H + BLANKING_PXLS_H)))));
-
+    basics_p.print_dgb("MAX_FPS = " & integer'image(MAX_FPS));
+    basics_p.print_dgb("---------------------------------------------------------");
+    basics_p.print_dgb("BLANKING_PXLS_W = " & integer'image(BLANKING_PXLS_SUM_W));
+    basics_p.print_dgb("FRONT_PORCH_W = "& integer'image(BLANKING_PXLS_W.front_porch));
+    basics_p.print_dgb("SYNC_PULSE_W = "& integer'image(BLANKING_PXLS_W.sync_pulse));
+    basics_p.print_dgb("BACK_PORCH_W = "& integer'image(BLANKING_PXLS_W.back_porch));
+    basics_p.print_dgb("---------------------------------------------------------");
+    basics_p.print_dgb("BLANKING_PXLS_H length is " & integer'image(BLANKING_PXLS_SUM_H));
+    basics_p.print_dgb("FRONT_PORCH_H = "& integer'image(BLANKING_PXLS_H.front_porch));
+    basics_p.print_dgb("SYNC_PULSE_H = "& integer'image(BLANKING_PXLS_H.sync_pulse));
+    basics_p.print_dgb("BACK_PORCH_H = "& integer'image(BLANKING_PXLS_H.back_porch));
+    basics_p.print_dgb("---------------------------------------------------------");
+    basics_p.print_dgb("PXL_X_CNTR_WIDTH = " & integer'image(PXL_X_CNTR_WIDTH));
+    basics_p.print_dgb("PXL_Y_CNTR_WIDTH = " & integer'image(PXL_Y_CNTR_WIDTH));
+    basics_p.print_dgb("IMG_ADR_X_WIDTH = " & integer'image(IMG_ADR_X_WIDTH));
+    basics_p.print_dgb("IMG_ADR_Y_WIDTH = " & integer'image(IMG_ADR_Y_WIDTH));
+    basics_p.print_dgb("---------------------------------------------------------");
+    basics_p.print_dgb("H-Frequency is " & real'image(real(CLK_FREQ_HZ) / real(DISPLAY_PXL_W + BLANKING_PXLS_SUM_W)));
+    basics_p.print_dgb("V-Frequency is " & real'image(real(CLK_FREQ_HZ) / (real((DISPLAY_PXL_W + BLANKING_PXLS_SUM_W)*(DISPLAY_PXL_H + BLANKING_PXLS_SUM_H)))));
     basics_p.print_dgb("h_cnt length is " & integer'image(h_cnt'length));
     basics_p.print_dgb("v_cnt length is " & integer'image(v_cnt'length));
-
+    basics_p.print_dgb("---------------------------------------------------------");
     basics_p.print_dgb("disp_x_adr length is " & integer'image(disp_x_adr'length));
     basics_p.print_dgb("disp_y_adr length is " & integer'image(disp_y_adr'length));
 
 
 horizontal_cnt : entity work.overflow_counter
     generic map(
-        SYNC_SIZE => DISPLAY_PXL_W + BLANKING_PXLS_W
+        SYNC_SIZE => DISPLAY_PXL_W + BLANKING_PXLS_SUM_W
     )
     port map(
         clk    => clk,
@@ -115,9 +210,9 @@ horizontal_cnt : entity work.overflow_counter
 hsync_gen : entity work.sync_gen
     generic map(
         DISPLAY_SIZE => DISPLAY_PXL_W,
-        FRONT_PORCH  => FRONT_PORCH_W,
-        SYNC_PULSE   => SYNC_PULSE_W,
-        BACK_PORCH   => BACK_PORCH_W,
+        FRONT_PORCH  => BLANKING_PXLS_W.front_porch,
+        SYNC_PULSE   => BLANKING_PXLS_W.sync_pulse,
+        BACK_PORCH   => BLANKING_PXLS_W.back_porch,
         POLARITY     => TRUE
     )
     port map(
@@ -127,7 +222,7 @@ hsync_gen : entity work.sync_gen
 
 vertical_cnt : entity work.overflow_counter
     generic map(
-        SYNC_SIZE => DISPLAY_PXL_H + BLANKING_PXLS_H
+        SYNC_SIZE => DISPLAY_PXL_H + BLANKING_PXLS_SUM_H
     )
     port map(
         clk    => clk,
@@ -138,9 +233,9 @@ vertical_cnt : entity work.overflow_counter
 vsync_gen : entity work.sync_gen
     generic map(
         DISPLAY_SIZE => DISPLAY_PXL_H,
-        FRONT_PORCH  => FRONT_PORCH_H,
-        SYNC_PULSE   => SYNC_PULSE_H,
-        BACK_PORCH   => BACK_PORCH_H,
+        FRONT_PORCH  => BLANKING_PXLS_H.front_porch,
+        SYNC_PULSE   => BLANKING_PXLS_H.sync_pulse,
+        BACK_PORCH   => BLANKING_PXLS_H.back_porch,
         POLARITY     => TRUE
     )
     port map(
@@ -152,8 +247,8 @@ vga_address_gen_inst : entity work.vga_address_gen
     generic map(
         DISPLAY_PXL_W => DISPLAY_PXL_W,
         DISPLAY_PXL_H => DISPLAY_PXL_H,
-        BLANKING_PXLS_W    => BLANKING_PXLS_W,
-        BLANKING_PXLS_H    => BLANKING_PXLS_H
+        BLANKING_PXLS_W    => BLANKING_PXLS_SUM_W,
+        BLANKING_PXLS_H    => BLANKING_PXLS_SUM_H
     )
     port map(
         h_cnt    => h_cnt,
