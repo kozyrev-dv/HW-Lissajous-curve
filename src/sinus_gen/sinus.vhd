@@ -4,14 +4,17 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity sinus is
     Port (
-        clk    : in  std_logic;
-        addr_a : in  std_logic_vector(7 downto 0);
-        addr_b : in  std_logic_vector(7 downto 0);
-        data_a : out std_logic_vector(8 downto 0);
-        data_b : out std_logic_vector(8 downto 0);
-		  data_valid : out std_logic
+        clk    		: in  std_logic;
+        addr_a 		: in  std_logic_vector(7 downto 0);
+        addr_b 		: in  std_logic_vector(7 downto 0);
+        data_a 		: out std_logic_vector(8 downto 0);
+        data_b 		: out std_logic_vector(8 downto 0);
+		  data_valid 	: out std_logic;
+		  enable     	: in  std_logic;
+		  rst     		: in  std_logic
     );
 end sinus;
+
 
 architecture arch of sinus is
     type rom_type is array (0 to 255) of unsigned(7 downto 0);
@@ -275,12 +278,19 @@ architecture arch of sinus is
     );
 
 begin
-    read_process: process(clk)
+    read_process: process(clk,rst)
     begin
+			
 			if rising_edge(clk) then
-				data_a <= '0' & std_logic_vector(sine_rom(to_integer(unsigned(addr_a))));
-				data_b <= '0' & std_logic_vector(sine_rom(to_integer(unsigned(addr_b))));
-				data_valid <= '1';
+				if rst = '0' then
+					data_valid <= '0';
+				elsif enable = '1' then
+					data_a <= '0' & std_logic_vector(sine_rom(to_integer(unsigned(addr_a))));
+					data_b <= '0' & std_logic_vector(sine_rom(to_integer(unsigned(addr_b))));
+					data_valid <= '1';
+				else
+					data_valid <= '0';
+				end if;
 			end if;
     end process;
 end arch;

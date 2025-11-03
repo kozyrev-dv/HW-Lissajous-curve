@@ -36,7 +36,7 @@ always @(posedge clk_i) begin
 	if (ena_i) begin
 		if (draw_pix_i) begin
 			cnt2 <= cnt2 + 1'b1;
-			if (cnt2 == 32 - 1) begin
+			if (cnt2 == 8 - 1) begin
 				cnt2 <= 0;
 				if (value_o == 4'b0000) begin
 					value_o <= value_o;

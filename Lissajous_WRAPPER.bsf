@@ -73,6 +73,13 @@ refer to the applicable agreement for further details.
 		(line (pt 0 128)(pt 16 128)(line_width 1))
 	)
 	(port
+		(pt 0 144)
+		(input)
+		(text "KEY1" (rect 0 0 24 12)(font "Arial" ))
+		(text "KEY1" (rect 21 139 45 151)(font "Arial" ))
+		(line (pt 0 144)(pt 16 144)(line_width 1))
+	)
+	(port
 		(pt 184 32)
 		(output)
 		(text "PIN_AA1" (rect 0 0 41 12)(font "Arial" ))
@@ -172,12 +179,22 @@ refer to the applicable agreement for further details.
 	)
 	(parameter
 		"RESOLUTION"
-		"110101101"
+		"000001010"
 		""
 		(type "PARAMETER_UNSIGNED_BIN")	)
 	(parameter
 		"CNT_TO"
 		"00000000000000110011111001001111"
+		""
+		(type "PARAMETER_UNSIGNED_BIN")	)
+	(parameter
+		"CLK_FREQ_HZ"
+		"25175000"
+		""
+		(type "PARAMETER_SIGNED_DEC")	)
+	(parameter
+		"FPS_HZ"
+		"00000000000000000000000000111011"
 		""
 		(type "PARAMETER_UNSIGNED_BIN")	)
 	(drawing
