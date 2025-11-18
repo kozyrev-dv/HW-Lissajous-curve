@@ -4,7 +4,8 @@ use ieee.numeric_std.all;
 entity ADC is
    port (
       ----------------- CLOCK
-      clk_in                  : in std_logic;
+      clk_sys                 : in std_logic;
+      clk_adc                 : in std_logic;
       reset                   : in std_logic;
 
       ------------------ OUTPUT
@@ -27,8 +28,6 @@ end entity ADC;
 
 architecture arch of ADC is
    ------------------ Clock
-   signal clk_out                : std_logic                         := '0';
-   signal clk_adc                : std_logic                         := '0';
 
    --signal counter_adc            : integer                           := 0;
    signal counter_main           : integer                           := 0;
@@ -58,17 +57,7 @@ architecture arch of ADC is
       );
    end component;
 
-   component ADC_PLL_IP is
-      port (
-         areset  : in std_logic;
-         inclk0  : in std_logic;
-         c0      : out std_logic;
-         c1      : out std_logic;
-         locked  : out std_logic
-      );
-   end component;
-
-   type STATE is (INIT_START, INIT_END, IDLE, WRITE_ADDRESS_0, READ_DATA_0, AVALON_CLEAR, WRITE_ADDRESS_1, READ_DATA_1);
+   type STATE is (INIT_START, INIT_END, IDLE, WRITE_ADDRESS_0, AVALON_CLEAR, WRITE_ADDRESS_1);
    --type SEND  is (INIT, WAIT_VALID);
 
    constant ADDRESS_ADC_0        : std_logic_vector (2 downto 0) := "000";
@@ -82,7 +71,6 @@ architecture arch of ADC is
    signal data_reg_0_valid, old_reg_0_valid  : std_logic                      := '0';
    signal data_reg_1_valid, old_reg_1_valid  : std_logic                      := '0';
    signal waitrequest_new, waitrequest_old   : std_logic                      := '0';
-   signal locked_sig                         : std_logic                      := '0';
 
 begin
 
@@ -98,43 +86,6 @@ begin
       adc_0_adc_slave_waitrequest => adc_slave_waitrequest,
       adc_0_adc_slave_read        => adc_slave_read
    );
-
-   -- ADC block instance  
-   ADC_PLL_IP_inst : ADC_PLL_IP
-   port map (
-      areset => not reset,
-      inclk0 => clk_in,
-      c0     => clk_adc,   -- 10 MHz
-      c1     => clk_out,   -- 50 MHz
-      locked => locked_sig
-   );
-
-   ------- STATE SEND Logic -------
-   -- process(state_send_reg, data_reg_valid)
-   -- begin
-   --    case state_send_reg is
-   --       when INIT =>
-   --          -- data_valid_o <= '0';
-   --          if (data_reg_valid = '0') then
-   --             state_send_next <= WAIT_VALID;
-   --          else
-   --             state_read_next <= INIT;
-   --          end if;
-
-   --       when WAIT_VALID =>
-   --          if (data_reg_valid = '1') then
-   --             data_adc_0_o <= data_out_0_reg(11 downto 0);
-   --             data_adc_1_o <= data_out_1_reg(11 downto 0);
-   --             data_valid_o <= '1';
-   --             state_send_next <= INIT;
-   --          else 
-   --             data_adc_0_o <= data_adc_0_o;
-   --             data_adc_1_o <= data_adc_0_o;
-   --             data_valid_o <= '1';
-   --             state_send_next <= INIT;
-   --          end if;
-   --    end case;
-   -- end process;
 
    ------- STATE READ Logic -------
    process(state_read_reg, waitrequest_old, waitrequest_new)
@@ -194,19 +145,6 @@ begin
                state_read_next <= WRITE_ADDRESS_0;
             end if;
 
-         when READ_DATA_0 =>
-         --    If(waitrequest_new = '0') then
-         --       adc_slave_address <= (others => '0');
-         --       data_out_0_reg <= adc_slave_readdata;
-         --       data_reg_0_valid <= '1';
-         --       state_read_next <= AVALON_CLEAR;
-         --    else
-         --       data_out_0_reg <= adc_slave_readdata;
-         --       data_reg_0_valid <= '0';
-         --       adc_slave_address <= ADDRESS_ADC_0;
-         --       state_read_next <= READ_DATA_0;
-         --    end if;
-
          when AVALON_CLEAR =>
             adc_slave_read <= '0';
             state_read_next <= WRITE_ADDRESS_1;
@@ -221,29 +159,12 @@ begin
                data_out_1_reg <= adc_slave_readdata;
                data_reg_1_valid <= '1';
                state_read_next <= IDLE;
-
-            -- else
-            --    adc_slave_address <= (others => '0');
-            --    data_out_1_reg <= adc_slave_readdata;
-            --    data_reg_1_valid <= '0';
-            --    state_read_next <= WRITE_ADDRESS_1;
-
+            else
+               adc_slave_address <= (others => '0');
+               data_out_1_reg <= adc_slave_readdata;
+               data_reg_1_valid <= '0';
+               state_read_next <= WRITE_ADDRESS_1;
             end if;
-
-         when READ_DATA_1 =>
-         --    if (waitrequest_new = '0') then
-         --       adc_slave_address <= (others => '0');
-         --       data_out_1_reg <= adc_slave_readdata;
-         --       data_reg_1_valid <= '1';
-         --       state_read_next <= IDLE;
-
-         --    else
-         --       adc_slave_address <= (others => '0');
-         --       data_out_1_reg <= adc_slave_readdata;
-         --       data_reg_1_valid <= '0';
-         --       state_read_next <= READ_DATA_1;
-
-         --    end if;
       end case;
    end process;
 
@@ -252,7 +173,8 @@ begin
    begin 
       if (reset = '0') then
          state_read_reg <= INIT_START;
-
+         waitrequest_new <= '0';
+         waitrequest_old <= '0';
       elsif rising_edge(clk_adc) then
          state_read_reg <= state_read_next;
 
@@ -262,7 +184,7 @@ begin
    end process;
 
    ------- OUTPUT BLOCK -------
-   process(clk_out, reset)
+   process(clk_sys, reset)
    begin
       if (reset = '0') then
          -- state_send_reg <= INIT;
@@ -274,7 +196,7 @@ begin
          data_adc_1_o <= (others => '0');
          data_valid_o <= '0';
 
-      elsif rising_edge(clk_out) then
+      elsif rising_edge(clk_sys) then
          --state_send_reg <= state_send_next;
 
          if ((not old_reg_0_valid) and (data_reg_0_valid)) then

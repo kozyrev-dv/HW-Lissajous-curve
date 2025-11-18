@@ -6,7 +6,8 @@ module Lissajous_WRAPPER
     parameter FPS_HZ        = 32'd59
 )
 (
-    input           PIN_P11, //MAX10_CLK1_50
+    input           clk_sys, //
+    input           clk_adc_10_mhz, // 10 MHz
     input           PIN_C10, //SW0
     input           PIN_C11, //SW1
     input           PIN_D12, //SW2
@@ -28,7 +29,17 @@ module Lissajous_WRAPPER
     output          PIN_P4 , // b
     output          PIN_N2 , // b
     output          PIN_N3 , // hsync
-    output          PIN_N1   // vsync
+    output          PIN_N1 ,   // vsync
+
+    output          LED0 , 
+    output          LED1 ,
+    output          LED2 ,
+    output          LED3 ,
+    output          LED4 ,
+    output          LED5 ,
+    output          LED6 ,
+    output          LED7 ,
+    output          LED8 
 );
 wire 	        hsync;
 wire            vsync;
@@ -39,7 +50,10 @@ wire    [3:0]   SW_value;
 wire    [3:0]   data_img;
 wire    [8:0]   data_gen1;
 wire    [8:0]   data_gen2;
+wire    [8:0]   data_adc1;
+wire    [8:0]   data_adc2;
 wire            valid_gen;
+wire            valid_adc;
 wire ready;
 wire valid_img;
 
@@ -71,19 +85,37 @@ Lissaju_top
 )
 Lissaju_top_inst
 (
-    .clk_i      (PIN_P11),
-    .dataADC1_i (0),
-    .dataADC2_i (0),
+    .clk_i      (clk_sys),
+    .dataADC1_i (data_adc1),
+    .dataADC2_i (data_adc2),
     .dataGEN1_i (data_gen1),
     .dataGEN2_i (data_gen2),
     .full_img_i (~ready),
     .sel_i      (PIN_A12  ), 
-    .validADC_i (0),
+    .validADC_i (valid_adc),
     .validGEN_i (valid_gen),
     .ready_i    (ready),
     .sclr_i     (KEY0),
     .data_o     (data_img),
     .valid_o    (valid_img)
+);
+
+ADC adc_inst (
+    .clk_sys(clk_sys),
+    .clk_adc(clk_adc_10_mhz),
+    .reset(KEY0),
+    .data_adc_0_o(data_adc1),
+    .data_adc_1_o(data_adc2),
+    .data_valid_o(valid_adc),
+    .LED0(LED0),
+    .LED1(LED1),
+    .LED2(LED2),
+    .LED3(LED3),
+    .LED4(LED4),
+    .LED5(LED5),
+    .LED6(LED6),
+    .LED7(LED7),
+    .LED8(LED8)
 );
 
 gen_sinus_top
@@ -93,7 +125,7 @@ gen_sinus_top
 )
 gen_sinus_top_inst
 (
-    .clk            (PIN_P11    ),
+    .clk            (clk_sys    ),
     .rst            (KEY0     ),
     .phase_shift_val(SW_value ),
     .data_a         (data_gen1),
@@ -118,7 +150,7 @@ vga_ctrl
 )
 vga_ctrl_inst
 (
-    .clk         (PIN_P11), 
+    .clk         (clk_sys), 
     .rst_n       (KEY0),     
     .img_i       (data_img),     
     .valid_i     (valid_img && KEY1),     
