@@ -136,9 +136,9 @@ begin
                state_read_next   <= AVALON_CLEAR;
 
             else
-               memory            <= (others => '0');
                data_reg_0_valid  <= '0';
                state_read_next   <= READ_DATA_0;
+
             end if;
 
          when AVALON_CLEAR =>
@@ -157,7 +157,6 @@ begin
                state_read_next   <= IDLE;
 
             else 
-               memory            <= (others => '0');
                data_reg_1_valid  <= '0';
                state_read_next   <= READ_DATA_1;
             end if;
@@ -193,20 +192,18 @@ begin
          data_valid_o      <= '0';
 
       elsif rising_edge(clk_sys) then
-         if ((not old_reg_0_valid) and (data_reg_0_valid)) then
-            old_reg_0_valid <= data_reg_0_valid;
-            old_reg_1_valid <= data_reg_1_valid;
-            
+         old_reg_0_valid <= data_reg_0_valid;
+         old_reg_1_valid <= data_reg_1_valid;
+
+         if ((not old_reg_0_valid) and (data_reg_0_valid)) then            
             data_out_0_reg <= memory(11 downto 0);
 
          elsif ((not old_reg_1_valid) and (data_reg_1_valid)) then
-            old_reg_0_valid <= data_reg_0_valid;
-            old_reg_1_valid <= data_reg_1_valid;
-            
             data_adc_0_o <= data_out_0_reg;
             data_adc_1_o <= memory(11 downto 0);
             
             data_valid_o <= '1';
+
             LED0 <= data_out_0_reg(8);
             LED1 <= data_out_0_reg(9);
             LED2 <= data_out_0_reg(10);
@@ -217,12 +214,6 @@ begin
             LED6 <= memory(10);
             LED7 <= memory(11);
          else
-            old_reg_0_valid <= data_reg_0_valid;
-            old_reg_1_valid <= data_reg_1_valid;
-            
-            data_adc_0_o <= data_adc_0_o;
-            data_adc_1_o <= data_adc_1_o;
-
             data_valid_o <= '0';
             
          end if;
