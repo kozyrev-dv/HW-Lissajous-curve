@@ -9,7 +9,7 @@ entity ADC is
       reset                   : in std_logic;
 
       ------------------ OUTPUT
-      data_adc_0_o            : out std_logic_vector (11 downto 0)   := (others => '0'); --- заменить сигналы на data_o выходные
+      data_adc_0_o            : out std_logic_vector (11 downto 0)   := (others => '0'); 
       data_adc_1_o            : out std_logic_vector (11 downto 0)   := (others => '0');
       data_valid_o            : out std_logic                        := '0';
 
@@ -52,8 +52,7 @@ architecture arch of ADC is
       );
    end component;
 
-   type STATE is (INIT_START, INIT_END, IDLE, WRITE_ADDRESS_0, AVALON_CLEAR, WRITE_ADDRESS_1);
-   --type SEND  is (INIT, WAIT_VALID);
+   type STATE is (INIT_START, INIT_END, IDLE, READ_DATA_0, AVALON_CLEAR, READ_DATA_1);
 
    constant ADDRESS_ADC_0        : std_logic_vector (2 downto 0) := "000";
    constant ADDRESS_ADC_1        : std_logic_vector (2 downto 0) := "001";
@@ -62,11 +61,12 @@ architecture arch of ADC is
 
    signal memory                             : std_logic_vector (31 downto 0) := (others => '0');
    signal data_out_0_reg, data_out_1_reg     : std_logic_vector (11 downto 0) := (others => '0');
-   signal state_read_reg, state_read_next    : STATE                          := INIT_START;
+   signal state_read_reg, state_read_next    : STATE                            := INIT_START;
 
    signal data_reg_0_valid, old_reg_0_valid  : std_logic                      := '0';
    signal data_reg_1_valid, old_reg_1_valid  : std_logic                      := '0';
    signal waitrequest_new, waitrequest_old   : std_logic                      := '0';
+   signal locked_sig                         : std_logic                      := '0';
 
 begin
 
@@ -126,6 +126,21 @@ begin
 
             state_read_next   <= READ_DATA_0;
 
+         when READ_DATA_0 =>
+            adc_slave_read    <= '1';
+            adc_slave_address <= ADDRESS_ADC_0;
+
+            If(waitrequest_new = '0') then
+               memory            <= adc_slave_readdata;
+               data_reg_0_valid  <= '1';
+               state_read_next   <= AVALON_CLEAR;
+
+            else
+               memory            <= (others => '0');
+               data_reg_0_valid  <= '0';
+               state_read_next   <= READ_DATA_0;
+            end if;
+
          when AVALON_CLEAR =>
             adc_slave_read    <= '0';
             state_read_next   <= READ_DATA_1;
@@ -133,18 +148,18 @@ begin
             memory            <= (others => '0');
 
          when READ_DATA_1 =>
-            adc_slave_read <= '1';
-            adc_slave_address <= ADDRESS_ADC_1;
+            adc_slave_read       <= '1';
+            adc_slave_address    <= ADDRESS_ADC_1;
             
             if (waitrequest_new = '0') then
-               memory <= adc_slave_readdata;
-               data_reg_1_valid <= '1';
-               state_read_next <= IDLE;
-            else
-               adc_slave_address <= (others => '0');
-               data_out_1_reg <= adc_slave_readdata;
-               data_reg_1_valid <= '0';
-               state_read_next <= WRITE_ADDRESS_1;
+               memory            <= adc_slave_readdata;
+               data_reg_1_valid  <= '1';
+               state_read_next   <= IDLE;
+
+            else 
+               memory            <= (others => '0');
+               data_reg_1_valid  <= '0';
+               state_read_next   <= READ_DATA_1;
             end if;
       end case;
    end process;
@@ -156,6 +171,7 @@ begin
          state_read_reg <= INIT_START;
          waitrequest_new <= '0';
          waitrequest_old <= '0';
+
       elsif rising_edge(clk_adc) then
          state_read_reg <= state_read_next;
 
@@ -165,36 +181,28 @@ begin
    end process;
 
    ------- OUTPUT BLOCK -------
-   process(clk_sys, reset)
+   process(clk_out, reset)
    begin
       if (reset = '0') then
-         -- state_send_reg <= INIT;
          old_reg_0_valid   <= '0';
          old_reg_1_valid   <= '0';
 
          data_out_0_reg    <= (others => '0');
-         -- data_out_1_reg    <= (others => '0');
          data_adc_0_o      <= (others => '0');
          data_adc_1_o      <= (others => '0');
          data_valid_o      <= '0';
 
-      elsif rising_edge(clk_sys) then
-         --state_send_reg <= state_send_next;
-
+      elsif rising_edge(clk_out) then
          if ((not old_reg_0_valid) and (data_reg_0_valid)) then
             old_reg_0_valid <= data_reg_0_valid;
             old_reg_1_valid <= data_reg_1_valid;
             
             data_out_0_reg <= memory(11 downto 0);
             
-            LED0 <= data_out_0_reg(4);
-            LED1 <= data_out_0_reg(5);
-            LED2 <= data_out_0_reg(6);
-            LED3 <= data_out_0_reg(7);
-            LED4 <= data_out_0_reg(8);
-            LED5 <= data_out_0_reg(9);
-            LED6 <= data_out_0_reg(10);
-            LED7 <= data_out_0_reg(11);
+            LED0 <= memory(8);
+            LED1 <= memory(9);
+            LED2 <= memory(10);
+            LED3 <= memory(11);
 
          elsif ((not old_reg_1_valid) and (data_reg_1_valid)) then
             old_reg_0_valid <= data_reg_0_valid;
@@ -205,6 +213,10 @@ begin
             
             data_valid_o <= '1';
 
+            LED4 <= memory(8);
+            LED5 <= memory(9);
+            LED6 <= memory(10);
+            LED7 <= memory(11);
          else
             old_reg_0_valid <= data_reg_0_valid;
             old_reg_1_valid <= data_reg_1_valid;
