@@ -198,11 +198,6 @@ begin
             old_reg_1_valid <= data_reg_1_valid;
             
             data_out_0_reg <= memory(11 downto 0);
-            
-            LED0 <= memory(8);
-            LED1 <= memory(9);
-            LED2 <= memory(10);
-            LED3 <= memory(11);
 
          elsif ((not old_reg_1_valid) and (data_reg_1_valid)) then
             old_reg_0_valid <= data_reg_0_valid;
@@ -212,6 +207,10 @@ begin
             data_adc_1_o <= memory(11 downto 0);
             
             data_valid_o <= '1';
+            LED0 <= data_out_0_reg(8);
+            LED1 <= data_out_0_reg(9);
+            LED2 <= data_out_0_reg(10);
+            LED3 <= data_out_0_reg(11);
 
             LED4 <= memory(8);
             LED5 <= memory(9);
