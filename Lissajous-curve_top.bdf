@@ -836,7 +836,7 @@ refer to the applicable agreement for further details.
 	)
 	(parameter
 		"RESOLUTION"
-		"16"
+		"429"
 		""
 		(type "PARAMETER_UNSIGNED_DEC")	)
 	(parameter
