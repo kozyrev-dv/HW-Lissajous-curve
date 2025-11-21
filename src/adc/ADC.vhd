@@ -181,7 +181,7 @@ begin
    end process;
 
    ------- OUTPUT BLOCK -------
-   process(clk_out, reset)
+   process(clk_sys, reset)
    begin
       if (reset = '0') then
          old_reg_0_valid   <= '0';
@@ -192,7 +192,7 @@ begin
          data_adc_1_o      <= (others => '0');
          data_valid_o      <= '0';
 
-      elsif rising_edge(clk_out) then
+      elsif rising_edge(clk_sys) then
          if ((not old_reg_0_valid) and (data_reg_0_valid)) then
             old_reg_0_valid <= data_reg_0_valid;
             old_reg_1_valid <= data_reg_1_valid;
