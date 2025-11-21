@@ -50,8 +50,8 @@ wire    [3:0]   SW_value;
 wire    [3:0]   data_img;
 wire    [8:0]   data_gen1;
 wire    [8:0]   data_gen2;
-wire    [8:0]   data_adc1;
-wire    [8:0]   data_adc2;
+wire    [11:0]   data_adc1;
+wire    [11:0]   data_adc2;
 wire            valid_gen;
 wire            valid_adc;
 wire ready;
@@ -86,8 +86,8 @@ Lissaju_top
 Lissaju_top_inst
 (
     .clk_i      (clk_sys),
-    .dataADC1_i (data_adc1),
-    .dataADC2_i (data_adc2),
+    .dataADC1_i (data_adc1[11:3]),
+    .dataADC2_i (data_adc2[11:3]),
     .dataGEN1_i (data_gen1),
     .dataGEN2_i (data_gen2),
     .full_img_i (~ready),
