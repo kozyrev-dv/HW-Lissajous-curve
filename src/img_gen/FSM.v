@@ -81,6 +81,10 @@ always @(posedge clk_i) begin
         
     endcase
 	 
+	 if (sclr_i) begin
+        cnt2 <= 0;
+	 end
+	 
 end
 
 endmodule
