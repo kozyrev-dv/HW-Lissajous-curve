@@ -27,6 +27,7 @@ reg [31:0] cnt2;
 
 always @(posedge clk_i) begin
     case (state)
+	 
         IDLE:
             begin
                 if (valid) begin
@@ -36,10 +37,6 @@ always @(posedge clk_i) begin
             
         WRITE:
             begin
-                if (sclr_i) begin
-                    cnt   <= 0;
-                    state <= IDLE;
-                end
                 if (cnt == (CNT_TO - 1) ) begin
                     cnt   <= 0;
                     state <= READ;
@@ -51,12 +48,16 @@ always @(posedge clk_i) begin
             
         READ:
             begin
-                if (sclr_i || done_i) begin
+                if (done_i) begin
                     state <= IDLE;
                 end 
             end
         
     endcase
+	 
+	 if (sclr_i) begin
+        state <= IDLE;
+	 end
 end
     
 always @(posedge clk_i) begin
@@ -79,6 +80,7 @@ always @(posedge clk_i) begin
             end
         
     endcase
+	 
 end
 
 endmodule

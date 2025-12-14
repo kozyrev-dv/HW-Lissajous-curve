@@ -28,10 +28,7 @@ reg  [17:0] w_adr_y = 0                            ;
 // ЗАПОЛНЕНИЕ И СБРОС БУФФЕРА 
 always @(posedge clk_i) begin
    
-    if (sclr_i) begin
-        buffer [r_adr_x][r_adr_y] <= 0;
-    end
-    else if (r_ena_i) begin
+    if (r_ena_i) begin
         buffer [r_adr_x][r_adr_y] <= 0;
     end
     else if (w_ena_i && (buffer [w_adr_x][w_adr_y] == 0) ) begin
