@@ -214,50 +214,6 @@ begin
    ------- OUTPUT BLOCK -------
    process(clk_sys, reset)
    begin
-<<<<<<< HEAD
-      if (reset = '0') then
-         old_reg_0_valid   <= '0';
-         old_reg_1_valid   <= '0';
-
-         data_out_0_reg    <= (others => '0');
-         data_adc_0_o      <= (others => '0');
-         data_adc_1_o      <= (others => '0');
-         data_valid_o      <= '0';
-
-      elsif rising_edge(clk_sys) then
-         if ((not old_reg_0_valid) and (data_reg_0_valid)) then
-            old_reg_0_valid <= data_reg_0_valid;
-            old_reg_1_valid <= data_reg_1_valid;
-            
-            data_out_0_reg <= memory(11 downto 0);
-
-         elsif ((not old_reg_1_valid) and (data_reg_1_valid)) then
-            old_reg_0_valid <= data_reg_0_valid;
-            old_reg_1_valid <= data_reg_1_valid;
-            
-            data_adc_0_o <= data_out_0_reg;
-            data_adc_1_o <= memory(11 downto 0);
-            
-            data_valid_o <= '1';
-            LED0 <= data_out_0_reg(8);
-            LED1 <= data_out_0_reg(9);
-            LED2 <= data_out_0_reg(10);
-            LED3 <= data_out_0_reg(11);
-
-            LED4 <= memory(8);
-            LED5 <= memory(9);
-            LED6 <= memory(10);
-            LED7 <= memory(11);
-         else
-            old_reg_0_valid <= data_reg_0_valid;
-            old_reg_1_valid <= data_reg_1_valid;
-            
-            data_adc_0_o <= data_adc_0_o;
-            data_adc_1_o <= data_adc_1_o;
-
-            data_valid_o <= '0';
-            
-=======
       if rising_edge(clk_sys) then
          if (reset = '0') then
             old_data_enable <= '0';
@@ -276,7 +232,6 @@ begin
             else
                data_valid_o <= '0';
             end if;
->>>>>>> malyga
          end if;
       end if;
    end process;
