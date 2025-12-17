@@ -1,133 +1,109 @@
 module FSM
 #(
-	parameter CNT_TO = 32'd212_559
+    parameter CNT_TO = 32'd212_559
 )
 
 (
-	input		   		clk_i  		, 
-	input		   		sclr_i 		,
-	input       		done_i		,
-    input	 	   		valid  		,
-	input	      		ready_i		,
-	output		[1:0]	next_state_o		,
-	output     	[3:0]  value_o	   	,
-   output reg  		w_ena_o		,
-   output reg  		r_ena_o
+    input               clk_i  , 
+    input               sclr_i ,
+    input               done_i ,
+    input               valid  ,
+    input               ready_i,
+    output reg    [3:0] value_o = 0,
+    output reg          w_ena_o = 0,
+    output reg          r_ena_o = 0
 );
 
 localparam [1:0] IDLE  = 2'b00;
 localparam [1:0] READ  = 2'b01;
 localparam [1:0] WRITE = 2'b10;
 
-wire timeout;
+reg       [1:0] state = 0;
 
-reg		  [1:0] state = 0;
-reg		  [1:0] NextState = 0;
 
-assign next_state_o = NextState;
-
-counter
-#(
-	.CNT_TO (CNT_TO)
-)
-FSM_WRITE_COUNTER
-(
-	.clk_i   (clk_i   ),
-	.ena_i   (state[1]),
-	.draw_pix_i (w_ena_o),
-	.value_o (value_o ),
-	.imp_o   (timeout )
-);
+reg [31:0] cnt  = 0;
+reg [31:0] cnt2 = 0;
 
 
 always @(posedge clk_i) begin
-	state <= NextState;
+    case (state)
+	 
+        IDLE:
+            begin
+                if (valid) begin
+                    state   <= WRITE;
+                end 
+            end
+            
+        WRITE:
+            begin
+                if (cnt == (CNT_TO - 1) ) begin
+						  
+						  if (ready_i) begin
+								cnt   <= 0;
+								state <= READ;
+						  end
+						  else begin
+								w_ena_o <= 1'b0;
+						  end
+						  
+                end
+					 else if (valid) begin
+							w_ena_o <= 1'b1;
+							cnt <= cnt + 1'b1;
+					 end
+                else begin
+						  w_ena_o <= 1'b0;
+                    cnt   <= cnt + 1'b1;
+                end
+            end
+            
+        READ:
+            begin
+                if (done_i) begin
+                    state <= IDLE;
+						  r_ena_o <= 1'b0;
+                end
+					 else begin
+						  r_ena_o <= 1'b1;
+					 end
+            end
+        
+    endcase
+	 
+	 if (sclr_i) begin
+        state <= IDLE;
+	 end
 end
-
-always @(*) begin
-
-	case (state)
-	
-		IDLE:
-			begin
-			
-				NextState = IDLE;
-					
-					if (valid) begin
-						NextState = WRITE;
-					end
-			end
-			
-		WRITE:
-			begin
-			
-				NextState = WRITE;
-					
-					if (sclr_i) begin
-						NextState = IDLE;
-					end
-					else if (timeout) begin
-						NextState = READ;
-					end
-						
-				end
+    
+always @(posedge clk_i) begin
+    case (state)
+        WRITE:
+            begin
+                if (value_o == 1'b1) begin
+                    value_o <= value_o;
+                end
+                else if (cnt2 == (CNT_TO >> 4) ) begin
+                        cnt2    <= 0;
+//                        value_o <= value_o - 1'b1;
+                end
+                else begin
+                    cnt2 <= cnt2 + 1'b1;
+                end
+            end
 				
 			READ:
 				begin
-				
-					NextState = READ;
-					
-					if (sclr_i || done_i) begin
-						NextState = IDLE;
-					end
-					
+					value_o <= 4'hF;
+					cnt2 <= 0;
 				end
-				
-		default: begin
-			NextState = IDLE;
-		end
-			
-	endcase
+        
+    endcase
+	 
+	 if (sclr_i) begin
+        cnt2 <= 0;
+	 end
+	 
 end
 
-always @(*) begin
-	case (state)
-		IDLE:
-			begin
-				w_ena_o = 1'b0;
-				r_ena_o = 1'b0;
-			end
-		
-		WRITE:
-			begin
-				w_ena_o = 1'b0;
-				r_ena_o = 1'b0;
-				
-				if (valid) begin
-					w_ena_o = 1'b1;
-				end
-			
-			end
-			
-		READ:
-			begin
-				w_ena_o = 1'b0;
-				r_ena_o = 1'b0;
-				
-				if (ready_i) begin
-					r_ena_o = 1'b1;
-				end
-				
-			end
-			
-		default: begin
-			w_ena_o = 1'b0;
-			r_ena_o = 1'b0;
-		end
-		
-	endcase	
-end
-
-
-
-endmodule 
+endmodule
