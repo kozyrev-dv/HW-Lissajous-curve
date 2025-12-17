@@ -9,6 +9,9 @@
 *.bak
 *.sdc
 *.qws
+*.qar
+*.qarlog
+*.rpt
 
 
 *.wlf
