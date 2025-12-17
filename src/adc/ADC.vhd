@@ -60,11 +60,14 @@ architecture arch of ADC is
    constant ADDRESS_UPDATE       : std_logic_vector (2 downto 0) := "000";   
 
    signal memory                             : std_logic_vector (31 downto 0) := (others => '0');
-   signal data_out_0_reg, data_out_1_reg     : std_logic_vector (11 downto 0) := (others => '0');
-   signal state_read_reg, state_read_next    : STATE                            := INIT_START;
+   signal data_reg                           : std_logic_vector (11 downto 0) := (others => '0');
+   signal data_adc_0_reg, data_adc_1_reg     : std_logic_vector (11 downto 0) := (others => '0');
+   signal state_read_reg, state_read_next    : STATE                          := INIT_START;
 
    signal data_reg_0_valid, old_reg_0_valid  : std_logic                      := '0';
    signal data_reg_1_valid, old_reg_1_valid  : std_logic                      := '0';
+   signal data_enable                        : std_logic                      := '0';
+   signal new_data_enable, old_data_enable   : std_logic                      := '0';
    signal waitrequest_new, waitrequest_old   : std_logic                      := '0';
    signal locked_sig                         : std_logic                      := '0';
 
@@ -167,22 +170,51 @@ begin
    ------- INSIDE BLOCK -------
    process(clk_adc, reset)
    begin 
-      if (reset = '0') then
-         state_read_reg <= INIT_START;
-         waitrequest_new <= '0';
-         waitrequest_old <= '0';
 
-      elsif rising_edge(clk_adc) then
-         state_read_reg <= state_read_next;
+      if rising_edge(clk_adc) then
+         if (reset = '0') then
+            state_read_reg <= INIT_START;
+            waitrequest_new <= '0';
+            waitrequest_old <= '0';
+            data_enable <= '0';
+            data_reg    <= (others => '0');
+         else 
+            state_read_reg <= state_read_next;
 
-         waitrequest_new <= adc_slave_waitrequest;
-         waitrequest_old <= waitrequest_new;
+            waitrequest_new <= adc_slave_waitrequest;
+            waitrequest_old <= waitrequest_new;
+
+            old_reg_0_valid <= data_reg_0_valid;
+            old_reg_1_valid <= data_reg_1_valid;
+
+            if ((not old_reg_0_valid) and (data_reg_0_valid)) then            
+               data_reg <= memory(11 downto 0);
+
+            elsif ((not old_reg_1_valid) and (data_reg_1_valid)) then
+               data_adc_0_reg <= data_reg;
+               data_adc_1_reg <= memory(11 downto 0);
+               data_enable <= '1';
+
+               LED0 <= data_reg(8);
+               LED1 <= data_reg(9);
+               LED2 <= data_reg(10);
+               LED3 <= data_reg(11);
+
+               LED4 <= memory(8);
+               LED5 <= memory(9);
+               LED6 <= memory(10);
+               LED7 <= memory(11);
+            else
+               data_enable <= '0';
+            end if;
+         end if;
       end if;
    end process;
 
    ------- OUTPUT BLOCK -------
    process(clk_sys, reset)
    begin
+<<<<<<< HEAD
       if (reset = '0') then
          old_reg_0_valid   <= '0';
          old_reg_1_valid   <= '0';
@@ -225,6 +257,26 @@ begin
 
             data_valid_o <= '0';
             
+=======
+      if rising_edge(clk_sys) then
+         if (reset = '0') then
+            old_data_enable <= '0';
+            new_data_enable <= '0';
+
+            data_adc_0_o      <= (others => '0');
+            data_adc_1_o      <= (others => '0');
+            data_valid_o      <= '0';
+         else
+            new_data_enable <= data_enable;
+            old_data_enable <= new_data_enable;
+            if (new_data_enable = '1' and old_data_enable = '0') then
+               data_adc_0_o <= data_adc_0_reg;
+               data_adc_1_o <= data_adc_1_reg;
+               data_valid_o <= '1';
+            else
+               data_valid_o <= '0';
+            end if;
+>>>>>>> malyga
          end if;
       end if;
    end process;
