@@ -38,10 +38,22 @@ always @(posedge clk_i) begin
         WRITE:
             begin
                 if (cnt == (CNT_TO - 1) ) begin
-                    cnt   <= 0;
-                    state <= READ;
+						  
+						  if (ready_i) begin
+								cnt   <= 0;
+								state <= READ;
+						  end
+						  else begin
+								w_ena_o <= 1'b0;
+						  end
+						  
                 end
+					 else if (valid) begin
+							w_ena_o <= 1'b1;
+							cnt <= cnt + 1'b1;
+					 end
                 else begin
+						  w_ena_o <= 1'b0;
                     cnt   <= cnt + 1'b1;
                 end
             end
@@ -50,7 +62,11 @@ always @(posedge clk_i) begin
             begin
                 if (done_i) begin
                     state <= IDLE;
-                end 
+						  r_ena_o <= 1'b0;
+                end
+					 else begin
+						  r_ena_o <= 1'b1;
+					 end
             end
         
     endcase
@@ -61,9 +77,6 @@ always @(posedge clk_i) begin
 end
     
 always @(posedge clk_i) begin
-    cnt2    <= 0;
-    value_o <= 4'hF;
-    
     case (state)
         WRITE:
             begin
@@ -78,6 +91,12 @@ always @(posedge clk_i) begin
                     cnt2 <= cnt2 + 1'b1;
                 end
             end
+				
+			READ:
+				begin
+					value_o <= 4'hF;
+					cnt2 <= 0;
+				end
         
     endcase
 	 
