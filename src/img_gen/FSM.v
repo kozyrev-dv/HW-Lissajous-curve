@@ -9,9 +9,9 @@ module FSM
     input               done_i ,
     input               valid  ,
     input               ready_i,
-    output reg    [3:0] value_o,
-    output reg          w_ena_o,
-    output reg          r_ena_o
+    output reg    [3:0] value_o = 0,
+    output reg          w_ena_o = 0,
+    output reg          r_ena_o = 0
 );
 
 localparam [1:0] IDLE  = 2'b00;
@@ -21,8 +21,8 @@ localparam [1:0] WRITE = 2'b10;
 reg       [1:0] state = 0;
 
 
-reg [31:0] cnt;
-reg [31:0] cnt2;
+reg [31:0] cnt  = 0;
+reg [31:0] cnt2 = 0;
 
 
 always @(posedge clk_i) begin
