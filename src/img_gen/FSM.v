@@ -80,29 +80,34 @@ always @(posedge clk_i) begin
     case (state)
         WRITE:
             begin
-                if (value_o == 1'b1) begin
+                if (value_o == 4'b1) begin
                     value_o <= value_o;
                 end
                 else if (cnt2 == (CNT_TO >> 4) ) begin
-                        cnt2    <= 0;
-//                        value_o <= value_o - 1'b1;
+                    cnt2    <= 0;
+                    value_o <= value_o - 1'b1;
                 end
                 else begin
                     cnt2 <= cnt2 + 1'b1;
+                    value_o <= value_o;
                 end
             end
 				
-			READ:
-				begin
-					value_o <= 4'hF;
-					cnt2 <= 0;
-				end
-        
+        READ:
+            begin
+                value_o <= 4'hF;
+                cnt2 <= 0;
+            end
+        default:
+            begin
+                value_o <= 4'hF;
+                cnt2 <= 0;
+            end
     endcase
 	 
-	 if (sclr_i) begin
+    if (sclr_i) begin
         cnt2 <= 0;
-	 end
+    end
 	 
 end
 

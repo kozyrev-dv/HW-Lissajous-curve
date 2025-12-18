@@ -82,7 +82,7 @@ FSM
 FSM_inst
 (
     .clk_i      (clk_i          ),
-	 .sclr_i     (sclr           ),
+	.sclr_i     (sclr           ),
     .valid      (valid          ),
     .ready_i    (ready_i        ),
     .done_i     (done           ),

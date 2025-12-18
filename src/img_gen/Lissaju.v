@@ -67,6 +67,11 @@ always @(posedge clk_i) begin
     
 end
 
+always @(posedge clk_i) begin
+  w_adr_x <= data1_i;
+  w_adr_y <= data2_i;
+end
+
 // КОНТРОЛЛЕР   
 always @(posedge clk_i) begin
     valid_o <= 1'b0;
